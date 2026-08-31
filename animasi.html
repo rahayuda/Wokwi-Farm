@@ -84,123 +84,126 @@
 </head>
 <body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col antialiased selection:bg-emerald-500 selection:text-white">
 
-  <header class="border-b border-slate-800/80 bg-slate-900/80 backdrop-blur sticky top-0 z-50">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-      <div class="flex items-center gap-3">
-        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-400 flex items-center justify-center shadow-lg shadow-emerald-500/20 text-white font-bold">
-          <i class="fa-solid fa-seedling text-xl"></i>
+  <header class="border-b border-slate-800/80 bg-slate-900/90 backdrop-blur sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-2.5 sm:py-3 flex flex-wrap items-center justify-between gap-2.5">
+      
+      <!-- Logo & Title -->
+      <div class="flex items-center gap-2.5">
+        <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-400 flex items-center justify-center shadow-lg shadow-emerald-500/20 text-white font-bold shrink-0">
+          <i class="fa-solid fa-seedling text-base sm:text-xl"></i>
         </div>
         <div>
-          <h1 class="text-base sm:text-lg font-bold tracking-tight bg-gradient-to-r from-emerald-400 via-teal-300 to-cyan-400 bg-clip-text text-transparent">
+          <h1 class="text-sm sm:text-lg font-bold tracking-tight leading-tight bg-gradient-to-r from-emerald-400 via-teal-300 to-cyan-400 bg-clip-text text-transparent">
             Smart Farming Greenhouse
           </h1>
-          <p class="text-xs text-slate-400 flex items-center gap-1.5">
-            <span class="inline-block w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-            Realtime Firebase RTDB Active
+          <p class="text-[10px] sm:text-xs text-slate-400 flex items-center gap-1.5">
+            <span class="inline-block w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+            Realtime Firebase RTDB
           </p>
         </div>
       </div>
 
-      <!-- Realtime Status Badge -->
-      <div class="flex items-center gap-3">
+      <!-- Realtime Status & Control Badges -->
+      <div class="flex items-center gap-1.5 sm:gap-3 shrink-0">
         <!-- Audio SFX Toggle Button -->
-        <button id="toggleSoundBtn" class="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold bg-slate-800 text-slate-300 border border-slate-700 hover:border-emerald-500 transition cursor-pointer" title="Aktifkan Suara Efek (Siram, AC, Serangga)">
-          <i class="fa-solid fa-volume-xmark text-rose-400" id="soundIcon"></i>
-          <span id="soundText">Suara: OFF</span>
+        <button id="toggleSoundBtn" class="flex items-center gap-1.5 px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-full text-[11px] sm:text-xs font-semibold bg-slate-800 text-slate-300 border border-slate-700 hover:border-emerald-500 transition cursor-pointer" title="Aktifkan Suara Efek (Siram, AC, Serangga)">
+          <i class="fa-solid fa-volume-xmark text-rose-400 text-[10px] sm:text-xs" id="soundIcon"></i>
+          <span id="soundText" class="whitespace-nowrap">Suara: OFF</span>
         </button>
 
-        <div id="connectionBadge" class="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/30">
-          <i class="fa-solid fa-circle-notch fa-spin text-[10px]" id="connIcon"></i>
-          <span id="connText">Menghubungkan ke RTDB...</span>
+        <!-- Firebase Connection Status Badge -->
+        <div id="connectionBadge" class="flex items-center gap-1.5 px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-full text-[11px] sm:text-xs font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/30">
+          <i class="fa-solid fa-circle-notch fa-spin text-[9px] sm:text-[10px]" id="connIcon"></i>
+          <span id="connText" class="whitespace-nowrap">Menghubungkan...</span>
         </div>
       </div>
     </div>
   </header>
 
-  <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 space-y-6">
+  <main class="flex-1 max-w-7xl w-full mx-auto p-3 sm:p-6 lg:p-8 space-y-4 sm:space-y-6">
     
     <!-- Visual Greenhouse Simulator View -->
-    <div id="farmSky" class="relative overflow-hidden rounded-3xl border border-slate-800 bg-gradient-to-b from-sky-950 via-slate-900 to-emerald-950/40 p-4 sm:p-8 shadow-2xl transition-all duration-700">
+    <div id="farmSky" class="relative overflow-hidden rounded-2xl sm:rounded-3xl border border-slate-800 bg-gradient-to-b from-sky-950 via-slate-900 to-emerald-950/40 p-3 sm:p-8 shadow-2xl transition-all duration-700">
       
       <!-- Top Badges / Actuator Status Overhead -->
-      <div class="flex flex-wrap items-center justify-between gap-3 mb-6 relative z-20">
+      <div class="flex flex-wrap items-center justify-between gap-1.5 sm:gap-3 mb-4 sm:mb-6 relative z-20">
         <!-- Day / Night Ambient Indicator -->
-        <div class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-900/80 backdrop-blur border border-slate-700/60 text-xs font-semibold">
+        <div class="flex items-center gap-1.5 px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-lg sm:rounded-xl bg-slate-900/80 backdrop-blur border border-slate-700/60 text-[10px] sm:text-xs font-semibold">
           <i id="skyIcon" class="fa-solid fa-sun text-amber-400"></i>
           <span id="skyModeLabel" class="text-slate-200">Mode: Siang (Day)</span>
         </div>
 
         <!-- Active Equipment Summary Indicators -->
-        <div class="flex flex-wrap items-center gap-2 text-xs">
+        <div class="flex flex-wrap items-center gap-1.5 sm:gap-2 text-[10px] sm:text-xs">
           <!-- Cooler / AC Status -->
-          <span id="acBadge" class="hidden px-3 py-1 rounded-full bg-cyan-500/20 text-cyan-300 border border-cyan-400/50 font-bold flex items-center gap-1.5 animate-pulse">
-            <i class="fa-solid fa-snowflake"></i> AC (Cooler): ON
+          <span id="acBadge" class="hidden px-2 py-0.5 sm:px-3 sm:py-1 rounded-full bg-cyan-500/20 text-cyan-300 border border-cyan-400/50 font-bold flex items-center gap-1 animate-pulse">
+            <i class="fa-solid fa-snowflake"></i> AC: ON
           </span>
           <!-- Heater Status -->
-          <span id="heaterBadge" class="hidden px-3 py-1 rounded-full bg-rose-500/20 text-rose-300 border border-rose-400/50 font-bold flex items-center gap-1.5 animate-pulse">
+          <span id="heaterBadge" class="hidden px-2 py-0.5 sm:px-3 sm:py-1 rounded-full bg-rose-500/20 text-rose-300 border border-rose-400/50 font-bold flex items-center gap-1 animate-pulse">
             <i class="fa-solid fa-fire text-orange-400"></i> Heater: ON
           </span>
           <!-- Watering / Keran Status -->
-          <span id="wateringBadge" class="hidden px-3 py-1 rounded-full bg-blue-500/20 text-blue-300 border border-blue-400/50 font-bold flex items-center gap-1.5 animate-pulse">
+          <span id="wateringBadge" class="hidden px-2 py-0.5 sm:px-3 sm:py-1 rounded-full bg-blue-500/20 text-blue-300 border border-blue-400/50 font-bold flex items-center gap-1 animate-pulse">
             <i class="fa-solid fa-faucet-drip"></i> Keran: ON
           </span>
           <!-- Insect / Serangga Alarm Status -->
-          <span id="alarmBadge" class="hidden px-3 py-1 rounded-full bg-red-600/30 text-red-200 border border-red-500 font-extrabold flex items-center gap-1.5 animate-bounce">
-            <i class="fa-solid fa-triangle-exclamation text-red-400"></i> ALARM HAMA/SERANGGA!
+          <span id="alarmBadge" class="hidden px-2 py-0.5 sm:px-3 sm:py-1 rounded-full bg-red-600/30 text-red-200 border border-red-500 font-extrabold flex items-center gap-1 animate-bounce">
+            <i class="fa-solid fa-triangle-exclamation text-red-400"></i> ALARM HAMA!
           </span>
         </div>
       </div>
 
       <!-- 2D Greenhouse Canvas Container -->
-      <div class="relative w-full h-[360px] sm:h-[400px] flex flex-col justify-between select-none">
+      <div class="relative w-full h-[320px] sm:h-[400px] flex flex-col justify-between select-none">
         
         <!-- Sky & Sun / Moon Layer -->
-        <div class="w-full flex justify-between items-start px-4">
+        <div class="w-full flex justify-between items-start px-2 sm:px-4">
           <!-- Celestial Body (Sun/Moon) -->
           <div id="celestialElement" class="transition-all duration-700 flex flex-col items-center">
-            <div id="celestialOrb" class="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-gradient-to-tr from-amber-400 to-yellow-200 shadow-2xl flex items-center justify-center">
-              <i id="celestialIcon" class="fa-solid fa-sun text-3xl sm:text-4xl text-amber-600"></i>
+            <div id="celestialOrb" class="w-12 h-12 sm:w-20 sm:h-20 rounded-full bg-gradient-to-tr from-amber-400 to-yellow-200 shadow-2xl flex items-center justify-center">
+              <i id="celestialIcon" class="fa-solid fa-sun text-2xl sm:text-4xl text-amber-600"></i>
             </div>
-            <span id="lightPercentLabel" class="text-[11px] font-bold text-amber-300 mt-2 tracking-wider bg-slate-950/70 px-2 py-0.5 rounded-md">
+            <span id="lightPercentLabel" class="text-[9px] sm:text-[11px] font-bold text-amber-300 mt-1 sm:mt-2 tracking-wider bg-slate-950/80 px-1.5 py-0.5 rounded-md border border-amber-500/20">
               Cahaya: 0%
             </span>
           </div>
 
           <!-- AC / Cooler Equipment Visual (Top Right Wall) -->
           <div class="relative flex flex-col items-end">
-            <div id="acUnit" class="bg-slate-800 border-2 border-slate-600 rounded-xl p-2.5 shadow-xl flex items-center gap-3 w-40 sm:w-48">
-              <div class="w-8 h-8 rounded-lg bg-cyan-950 flex items-center justify-center border border-cyan-500/30">
-                <i class="fa-solid fa-fan text-slate-400" id="acFanIcon"></i>
+            <div id="acUnit" class="bg-slate-800 border-2 border-slate-600 rounded-xl p-1.5 sm:p-2.5 shadow-xl flex items-center gap-2 sm:gap-3 w-32 sm:w-48">
+              <div class="w-6 h-6 sm:w-8 sm:h-8 rounded-lg bg-cyan-950 flex items-center justify-center border border-cyan-500/30 shrink-0">
+                <i class="fa-solid fa-fan text-slate-400 text-xs sm:text-base" id="acFanIcon"></i>
               </div>
-              <div>
-                <div class="text-[10px] font-bold text-slate-300">AC / COOLER UNIT</div>
-                <div id="acStatusText" class="text-[9px] font-semibold text-slate-500">STANDBY</div>
+              <div class="overflow-hidden">
+                <div class="text-[9px] sm:text-[10px] font-bold text-slate-300 truncate">AC / COOLER UNIT</div>
+                <div id="acStatusText" class="text-[8px] sm:text-[9px] font-semibold text-slate-500 truncate">STANDBY</div>
               </div>
             </div>
             <!-- Dynamic Cold Wind Stream -->
-            <div id="acWindStream" class="hidden absolute top-12 right-6 flex flex-col items-center pointer-events-none opacity-80">
-              <div class="w-12 h-20 bg-gradient-to-b from-cyan-400/40 to-transparent rounded-full blur-sm ac-breeze"></div>
-              <i class="fa-solid fa-snowflake text-cyan-300 text-xs animate-spin -mt-8"></i>
+            <div id="acWindStream" class="hidden absolute top-10 sm:top-12 right-4 sm:right-6 flex flex-col items-center pointer-events-none opacity-80">
+              <div class="w-8 sm:w-12 h-16 sm:h-20 bg-gradient-to-b from-cyan-400/40 to-transparent rounded-full blur-sm ac-breeze"></div>
+              <i class="fa-solid fa-snowflake text-cyan-300 text-[10px] sm:text-xs animate-spin -mt-6 sm:-mt-8"></i>
             </div>
           </div>
         </div>
 
-        <!-- Insect / Pest Distance Sensor & Alarm Area (Kiri/Tengah) -->
-        <div id="insectSensorZone" class="absolute top-20 left-12 z-20 flex flex-col items-center">
-          <div class="bg-slate-900/90 border border-slate-700 rounded-xl px-3 py-1.5 shadow-lg flex items-center gap-2">
-            <i class="fa-solid fa-radar text-indigo-400"></i>
+        <!-- Insect / Pest Distance Sensor & Alarm Area -->
+        <div id="insectSensorZone" class="absolute top-24 sm:top-20 left-2 sm:left-12 z-20 flex flex-col items-start sm:items-center">
+          <div class="bg-slate-900/90 border border-slate-700/80 rounded-lg sm:rounded-xl px-2 py-1 sm:px-3 sm:py-1.5 shadow-lg flex items-center gap-1.5 sm:gap-2">
+            <i class="fa-solid fa-radar text-indigo-400 text-xs sm:text-sm"></i>
             <div>
-              <span class="text-[10px] text-slate-400 block leading-none">Sensor Hama (Jarak)</span>
-              <span id="sensorDistanceDisplay" class="text-xs font-mono font-bold text-indigo-300">-- cm</span>
+              <span class="text-[8px] sm:text-[10px] text-slate-400 block leading-none">Sensor Hama</span>
+              <span id="sensorDistanceDisplay" class="text-[10px] sm:text-xs font-mono font-bold text-indigo-300">-- cm</span>
             </div>
           </div>
           
           <!-- Serangga Visual yang Mendekat Saat Distance < 30 cm -->
-          <div id="insectGraphic" class="hidden mt-4 bug-animation flex flex-col items-center">
-            <div class="px-2 py-0.5 rounded bg-red-950/90 border border-red-500 text-[9px] text-red-300 font-bold mb-1">
+          <div id="insectGraphic" class="hidden mt-2 sm:mt-4 bug-animation flex flex-col items-center">
+            <div class="px-1.5 py-0.5 rounded bg-red-950/90 border border-red-500 text-[8px] sm:text-[9px] text-red-300 font-bold mb-0.5 sm:mb-1">
               HAMA TERDETEKSI!
             </div>
-            <i class="fa-solid fa-bug text-3xl text-red-500 drop-shadow-[0_0_10px_rgba(239,68,68,0.8)]"></i>
+            <i class="fa-solid fa-bug text-2xl sm:text-3xl text-red-500 drop-shadow-[0_0_10px_rgba(239,68,68,0.8)]"></i>
           </div>
         </div>
 
@@ -208,31 +211,31 @@
         <div class="relative w-full flex justify-center items-end">
           
           <!-- Heater Unit Visual (Warm Radiation) -->
-          <div id="heaterUnit" class="absolute -top-32 left-1/3 z-20 hidden flex-col items-center">
-            <div class="px-3 py-1 bg-gradient-to-r from-orange-600 to-rose-600 rounded-lg text-[10px] font-bold text-white shadow-lg flex items-center gap-1.5">
-              <i class="fa-solid fa-fire animate-pulse"></i> PEMANAS (HEATER) AKTIF
+          <div id="heaterUnit" class="absolute -top-24 sm:-top-32 left-1/4 sm:left-1/3 z-20 hidden flex-col items-center">
+            <div class="px-2 py-0.5 sm:px-3 sm:py-1 bg-gradient-to-r from-orange-600 to-rose-600 rounded-lg text-[9px] sm:text-[10px] font-bold text-white shadow-lg flex items-center gap-1">
+              <i class="fa-solid fa-fire animate-pulse"></i> PEMANAS AKTIF
             </div>
-            <div class="w-32 h-16 bg-gradient-to-b from-rose-500/30 to-transparent rounded-b-full blur-md heat-glow"></div>
+            <div class="w-24 sm:w-32 h-12 sm:h-16 bg-gradient-to-b from-rose-500/30 to-transparent rounded-b-full blur-md heat-glow"></div>
           </div>
 
           <!-- Pipanisasi & Sprinkler Menyiram Air -->
-          <div class="absolute -top-24 z-30 flex flex-col items-center">
-            <div class="w-64 sm:w-80 h-3 bg-gradient-to-r from-slate-600 via-slate-500 to-slate-600 rounded-full shadow-md relative flex justify-center">
-              <span class="absolute -top-2 px-2 py-0.5 bg-slate-800 border border-slate-700 rounded text-[9px] text-cyan-400 font-mono">
-                SISTEM IRIGASI OTOMATIS
+          <div class="absolute -top-20 sm:-top-24 z-30 flex flex-col items-center">
+            <div class="w-48 sm:w-80 h-2.5 sm:h-3 bg-gradient-to-r from-slate-600 via-slate-500 to-slate-600 rounded-full shadow-md relative flex justify-center">
+              <span class="absolute -top-2 px-1.5 py-0.5 bg-slate-800 border border-slate-700 rounded text-[8px] sm:text-[9px] text-cyan-400 font-mono">
+                IRIGASI OTOMATIS
               </span>
             </div>
             <!-- Keran Nozzle -->
             <div class="relative flex flex-col items-center">
-              <div class="w-5 h-6 bg-slate-700 border border-slate-500 rounded-b-md flex items-center justify-center">
-                <i class="fa-solid fa-faucet-drip text-[10px] text-cyan-400" id="valveIcon"></i>
+              <div class="w-4 h-5 sm:w-5 sm:h-6 bg-slate-700 border border-slate-500 rounded-b-md flex items-center justify-center">
+                <i class="fa-solid fa-faucet-drip text-[9px] sm:text-[10px] text-cyan-400" id="valveIcon"></i>
               </div>
               <!-- Semprotan Air -->
               <div id="sprinklerSpray" class="hidden flex-col items-center pointer-events-none">
-                <div class="w-2 h-20 bg-gradient-to-b from-cyan-300 via-blue-400 to-blue-600 rounded-full water-stream shadow-[0_0_12px_rgba(6,182,212,0.8)]"></div>
-                <div class="relative -top-16 flex gap-8 w-36 justify-center opacity-80">
-                  <div class="w-1.5 h-16 bg-cyan-300 rounded-full transform -rotate-20 water-stream"></div>
-                  <div class="w-1.5 h-16 bg-cyan-300 rounded-full transform rotate-20 water-stream"></div>
+                <div class="w-2 h-16 sm:h-20 bg-gradient-to-b from-cyan-300 via-blue-400 to-blue-600 rounded-full water-stream shadow-[0_0_12px_rgba(6,182,212,0.8)]"></div>
+                <div class="relative -top-12 sm:-top-16 flex gap-6 sm:gap-8 w-28 sm:w-36 justify-center opacity-80">
+                  <div class="w-1 h-12 sm:w-1.5 sm:h-16 bg-cyan-300 rounded-full transform -rotate-20 water-stream"></div>
+                  <div class="w-1 h-12 sm:w-1.5 sm:h-16 bg-cyan-300 rounded-full transform rotate-20 water-stream"></div>
                 </div>
               </div>
             </div>
@@ -240,11 +243,11 @@
 
           <!-- Tanaman & Bedeng Tanah Layer -->
           <div class="w-full relative z-10">
-            <div class="flex justify-around items-end px-4 sm:px-12 max-w-3xl mx-auto pb-1">
+            <div class="flex justify-around items-end px-2 sm:px-12 max-w-3xl mx-auto pb-1">
               
               <!-- Tanaman 1 -->
-              <div class="flex flex-col items-center swaying-plant">
-                <svg width="60" height="70" viewBox="0 0 60 70" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <div class="flex flex-col items-center swaying-plant scale-90 sm:scale-100">
+                <svg width="50" height="60" viewBox="0 0 60 70" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <path d="M30 70V30" stroke="#15803d" stroke-width="4" stroke-linecap="round"/>
                   <path class="plant-leaf" d="M30 40C20 35 12 40 10 27C22 25 28 33 30 40Z" fill="#22c55e"/>
                   <path class="plant-leaf" d="M30 33C40 28 48 33 50 20C38 18 32 26 30 33Z" fill="#16a34a"/>
@@ -252,8 +255,8 @@
               </div>
 
               <!-- Tanaman Utama 2 -->
-              <div class="flex flex-col items-center swaying-plant scale-110 sm:scale-125">
-                <svg width="80" height="100" viewBox="0 0 80 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <div class="flex flex-col items-center swaying-plant scale-100 sm:scale-125">
+                <svg width="70" height="90" viewBox="0 0 80 100" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <path d="M40 100V25" stroke="#166534" stroke-width="5" stroke-linecap="round"/>
                   <path class="plant-leaf" d="M40 70C20 65 10 78 5 52C27 47 36 60 40 70Z" fill="#22c55e"/>
                   <path class="plant-leaf" d="M40 60C60 55 70 68 75 42C53 37 44 50 40 60Z" fill="#15803d"/>
@@ -264,8 +267,8 @@
               </div>
 
               <!-- Tanaman 3 -->
-              <div class="flex flex-col items-center swaying-plant">
-                <svg width="60" height="75" viewBox="0 0 60 75" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <div class="flex flex-col items-center swaying-plant scale-90 sm:scale-100">
+                <svg width="50" height="65" viewBox="0 0 60 75" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <path d="M30 75V25" stroke="#15803d" stroke-width="4" stroke-linecap="round"/>
                   <path class="plant-leaf" d="M30 50C15 45 8 55 6 36C22 32 27 44 30 50Z" fill="#22c55e"/>
                   <path class="plant-leaf" d="M30 38C45 33 52 43 54 24C38 20 33 32 30 38Z" fill="#16a34a"/>
@@ -275,7 +278,7 @@
             </div>
 
             <!-- Ground Dirt Bed -->
-            <div class="w-full h-8 bg-gradient-to-r from-amber-950 via-amber-900 to-amber-950 border-t-4 border-amber-800 rounded-b-2xl shadow-inner"></div>
+            <div class="w-full h-6 sm:h-8 bg-gradient-to-r from-amber-950 via-amber-900 to-amber-950 border-t-4 border-amber-800 rounded-b-xl sm:rounded-b-2xl shadow-inner"></div>
           </div>
 
         </div>
@@ -284,6 +287,7 @@
 
     </div>
 
+    <!-- 4 Telemetry Sensor Cards Grid -->
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
       
       <!-- 1. Light Intensity Card -->
