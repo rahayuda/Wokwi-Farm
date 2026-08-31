@@ -1,714 +1,475 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <!-- Google tag (gtag.js) -->
-  <script async src="https://www.googletagmanager.com/gtag/js?id=G-E9RN7W9R08"></script>
-  <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-    gtag('config', 'G-E9RN7W9R08');
-  </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Farming IoT Simulation</title>
+    
+    <!-- Tailwind CSS untuk Styling Modern -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons untuk Ikon Telemetri -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+        
+        /* Animasi Semprotan / Aliran Air Keran */
+        @keyframes flow {
+            0% { background-position: 0 0; }
+            100% { background-position: 0 40px; }
+        }
+        .water-spray {
+            background: linear-gradient(180deg, rgba(56, 189, 248, 0.7) 0%, rgba(14, 165, 233, 0.1) 100%);
+            background-size: 100% 40px;
+            animation: flow 0.8s linear infinite;
+        }
 
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Smart Farming IoT Greenhouse Simulation</title>
-  
-  <!-- Tailwind CSS -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  
-  <!-- Font Awesome Icons -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
-  
-  <!-- Google Fonts -->
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+        /* Animasi Tanaman Bergoyang Alami */
+        @keyframes sway {
+            0%, 100% { transform: rotate(0deg); }
+            50% { transform: rotate(3deg); }
+        }
+        .sway { transform-origin: bottom center; animation: sway 4s ease-in-out infinite; }
 
-  <style>
-    body {
-      font-family: 'Plus Jakarta Sans', sans-serif;
-    }
+        /* Animasi Denyut Pertumbuhan Tanaman saat Disiram */
+        @keyframes grow {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        .growing { animation: grow 2s ease-in-out infinite; }
 
-    /* Animasi Pancuran Air Keran */
-    @keyframes waterFlow {
-      0% { transform: translateY(0) scaleY(1); opacity: 0.9; }
-      100% { transform: translateY(110px) scaleY(1.3); opacity: 0.2; }
-    }
-    .water-stream {
-      animation: waterFlow 0.5s linear infinite;
-    }
-
-    /* Animasi Hembusan Dingin AC (Cooler) */
-    @keyframes acWind {
-      0% { transform: translateY(0) scale(0.8); opacity: 0.8; }
-      100% { transform: translateY(80px) scale(1.4); opacity: 0; }
-    }
-    .ac-breeze {
-      animation: acWind 1.2s ease-out infinite;
-    }
-
-    /* Animasi Radiasi Pemanas (Heater) */
-    @keyframes heatWave {
-      0%, 100% { opacity: 0.3; transform: scaleY(1); }
-      50% { opacity: 0.9; transform: scaleY(1.2); }
-    }
-    .heat-glow {
-      animation: heatWave 1.5s ease-in-out infinite;
-    }
-
-    /* Animasi Terbang Serangga / Hama */
-    @keyframes bugFly {
-      0%, 100% { transform: translate(0, 0) rotate(0deg); }
-      25% { transform: translate(15px, -10px) rotate(10deg); }
-      50% { transform: translate(-10px, 15px) rotate(-10deg); }
-      75% { transform: translate(10px, 10px) rotate(5deg); }
-    }
-    .bug-animation {
-      animation: bugFly 2s ease-in-out infinite;
-    }
-
-    /* Animasi Goyang Tanaman */
-    @keyframes plantSway {
-      0%, 100% { transform: rotate(0deg); }
-      50% { transform: rotate(2deg); }
-    }
-    .swaying-plant {
-      transform-origin: bottom center;
-      animation: plantSway 3.5s ease-in-out infinite;
-    }
-
-    /* Transition halus untuk perubahan warna card */
-    .status-card {
-      transition: all 0.5s ease-in-out;
-    }
-  </style>
+        /* Efek Cahaya Matahari */
+        @keyframes sun-glow {
+            0%, 100% { filter: drop-shadow(0 0 15px rgba(250, 204, 21, 0.6)); }
+            50% { filter: drop-shadow(0 0 30px rgba(250, 204, 21, 0.9)); }
+        }
+        .sun-glow { animation: sun-glow 3s ease-in-out infinite; }
+    </style>
 </head>
-<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col antialiased selection:bg-emerald-500 selection:text-white">
+<body class="bg-slate-900 text-slate-100 min-h-screen pb-12">
 
-  <header class="border-b border-slate-800/80 bg-slate-900/80 backdrop-blur sticky top-0 z-50">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-      <div class="flex items-center gap-3">
-        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-400 flex items-center justify-center shadow-lg shadow-emerald-500/20 text-white font-bold">
-          <i class="fa-solid fa-seedling text-xl"></i>
-        </div>
-        <div>
-          <h1 class="text-base sm:text-lg font-bold tracking-tight bg-gradient-to-r from-emerald-400 via-teal-300 to-cyan-400 bg-clip-text text-transparent">
-            Smart Farming Greenhouse
-          </h1>
-          <p class="text-xs text-slate-400 flex items-center gap-1.5">
-            <span class="inline-block w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-            Realtime Firebase RTDB Active
-          </p>
-        </div>
-      </div>
-
-      <!-- Realtime Status Badge -->
-      <div class="flex items-center gap-3">
-        <div id="connectionBadge" class="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/30">
-          <i class="fa-solid fa-circle-notch fa-spin text-[10px]" id="connIcon"></i>
-          <span id="connText">Menghubungkan ke RTDB...</span>
-        </div>
-      </div>
-    </div>
-  </header>
-
-  <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 space-y-6">
-    
-    <!-- Visual Greenhouse Simulator View -->
-    <div id="farmSky" class="relative overflow-hidden rounded-3xl border border-slate-800 bg-gradient-to-b from-sky-950 via-slate-900 to-emerald-950/40 p-4 sm:p-8 shadow-2xl transition-all duration-700">
-      
-      <!-- Top Badges / Actuator Status Overhead -->
-      <div class="flex flex-wrap items-center justify-between gap-3 mb-6 relative z-20">
-        <!-- Day / Night Ambient Indicator -->
-        <div class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-900/80 backdrop-blur border border-slate-700/60 text-xs font-semibold">
-          <i id="skyIcon" class="fa-solid fa-sun text-amber-400"></i>
-          <span id="skyModeLabel" class="text-slate-200">Mode: Siang (Day)</span>
-        </div>
-
-        <!-- Active Equipment Summary Indicators -->
-        <div class="flex flex-wrap items-center gap-2 text-xs">
-          <!-- Cooler / AC Status -->
-          <span id="acBadge" class="hidden px-3 py-1 rounded-full bg-cyan-500/20 text-cyan-300 border border-cyan-400/50 font-bold flex items-center gap-1.5 animate-pulse">
-            <i class="fa-solid fa-snowflake"></i> AC (Cooler): ON
-          </span>
-          <!-- Heater Status -->
-          <span id="heaterBadge" class="hidden px-3 py-1 rounded-full bg-rose-500/20 text-rose-300 border border-rose-400/50 font-bold flex items-center gap-1.5 animate-pulse">
-            <i class="fa-solid fa-fire text-orange-400"></i> Heater: ON
-          </span>
-          <!-- Watering / Keran Status -->
-          <span id="wateringBadge" class="hidden px-3 py-1 rounded-full bg-blue-500/20 text-blue-300 border border-blue-400/50 font-bold flex items-center gap-1.5 animate-pulse">
-            <i class="fa-solid fa-faucet-drip"></i> Keran: ON
-          </span>
-          <!-- Insect / Serangga Alarm Status -->
-          <span id="alarmBadge" class="hidden px-3 py-1 rounded-full bg-red-600/30 text-red-200 border border-red-500 font-extrabold flex items-center gap-1.5 animate-bounce">
-            <i class="fa-solid fa-triangle-exclamation text-red-400"></i> ALARM HAMA/SERANGGA!
-          </span>
-        </div>
-      </div>
-
-      <!-- 2D Greenhouse Canvas Container -->
-      <div class="relative w-full h-[360px] sm:h-[400px] flex flex-col justify-between select-none">
-        
-        <!-- Sky & Sun / Moon Layer -->
-        <div class="w-full flex justify-between items-start px-4">
-          <!-- Celestial Body (Sun/Moon) -->
-          <div id="celestialElement" class="transition-all duration-700 flex flex-col items-center">
-            <div id="celestialOrb" class="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-gradient-to-tr from-amber-400 to-yellow-200 shadow-2xl flex items-center justify-center">
-              <i id="celestialIcon" class="fa-solid fa-sun text-3xl sm:text-4xl text-amber-600"></i>
-            </div>
-            <span id="lightPercentLabel" class="text-[11px] font-bold text-amber-300 mt-2 tracking-wider bg-slate-950/70 px-2 py-0.5 rounded-md">
-              Cahaya: 0%
-            </span>
-          </div>
-
-          <!-- AC / Cooler Equipment Visual (Top Right Wall) -->
-          <div class="relative flex flex-col items-end">
-            <div id="acUnit" class="bg-slate-800 border-2 border-slate-600 rounded-xl p-2.5 shadow-xl flex items-center gap-3 w-40 sm:w-48">
-              <div class="w-8 h-8 rounded-lg bg-cyan-950 flex items-center justify-center border border-cyan-500/30">
-                <i class="fa-solid fa-fan text-slate-400" id="acFanIcon"></i>
-              </div>
-              <div>
-                <div class="text-[10px] font-bold text-slate-300">AC / COOLER UNIT</div>
-                <div id="acStatusText" class="text-[9px] font-semibold text-slate-500">STANDBY</div>
-              </div>
-            </div>
-            <!-- Dynamic Cold Wind Stream -->
-            <div id="acWindStream" class="hidden absolute top-12 right-6 flex flex-col items-center pointer-events-none opacity-80">
-              <div class="w-12 h-20 bg-gradient-to-b from-cyan-400/40 to-transparent rounded-full blur-sm ac-breeze"></div>
-              <i class="fa-solid fa-snowflake text-cyan-300 text-xs animate-spin -mt-8"></i>
-            </div>
-          </div>
-        </div>
-
-        <!-- Insect / Pest Distance Sensor & Alarm Area (Kiri/Tengah) -->
-        <div id="insectSensorZone" class="absolute top-20 left-12 z-20 flex flex-col items-center">
-          <div class="bg-slate-900/90 border border-slate-700 rounded-xl px-3 py-1.5 shadow-lg flex items-center gap-2">
-            <i class="fa-solid fa-radar text-indigo-400"></i>
-            <div>
-              <span class="text-[10px] text-slate-400 block leading-none">Sensor Hama (Jarak)</span>
-              <span id="sensorDistanceDisplay" class="text-xs font-mono font-bold text-indigo-300">-- cm</span>
-            </div>
-          </div>
-          
-          <!-- Serangga Visual yang Mendekat Saat Distance < 30 cm -->
-          <div id="insectGraphic" class="hidden mt-4 bug-animation flex flex-col items-center">
-            <div class="px-2 py-0.5 rounded bg-red-950/90 border border-red-500 text-[9px] text-red-300 font-bold mb-1">
-              HAMA TERDETEKSI!
-            </div>
-            <i class="fa-solid fa-bug text-3xl text-red-500 drop-shadow-[0_0_10px_rgba(239,68,68,0.8)]"></i>
-          </div>
-        </div>
-
-        <!-- Central Pipe & Sprinkler Irrigation System -->
-        <div class="relative w-full flex justify-center items-end">
-          
-          <!-- Heater Unit Visual (Warm Radiation) -->
-          <div id="heaterUnit" class="absolute -top-32 left-1/3 z-20 hidden flex-col items-center">
-            <div class="px-3 py-1 bg-gradient-to-r from-orange-600 to-rose-600 rounded-lg text-[10px] font-bold text-white shadow-lg flex items-center gap-1.5">
-              <i class="fa-solid fa-fire animate-pulse"></i> PEMANAS (HEATER) AKTIF
-            </div>
-            <div class="w-32 h-16 bg-gradient-to-b from-rose-500/30 to-transparent rounded-b-full blur-md heat-glow"></div>
-          </div>
-
-          <!-- Pipanisasi & Sprinkler Menyiram Air -->
-          <div class="absolute -top-24 z-30 flex flex-col items-center">
-            <div class="w-64 sm:w-80 h-3 bg-gradient-to-r from-slate-600 via-slate-500 to-slate-600 rounded-full shadow-md relative flex justify-center">
-              <span class="absolute -top-2 px-2 py-0.5 bg-slate-800 border border-slate-700 rounded text-[9px] text-cyan-400 font-mono">
-                SISTEM IRIGASI OTOMATIS
-              </span>
-            </div>
-            <!-- Keran Nozzle -->
-            <div class="relative flex flex-col items-center">
-              <div class="w-5 h-6 bg-slate-700 border border-slate-500 rounded-b-md flex items-center justify-center">
-                <i class="fa-solid fa-faucet-drip text-[10px] text-cyan-400" id="valveIcon"></i>
-              </div>
-              <!-- Semprotan Air -->
-              <div id="sprinklerSpray" class="hidden flex-col items-center pointer-events-none">
-                <div class="w-2 h-20 bg-gradient-to-b from-cyan-300 via-blue-400 to-blue-600 rounded-full water-stream shadow-[0_0_12px_rgba(6,182,212,0.8)]"></div>
-                <div class="relative -top-16 flex gap-8 w-36 justify-center opacity-80">
-                  <div class="w-1.5 h-16 bg-cyan-300 rounded-full transform -rotate-20 water-stream"></div>
-                  <div class="w-1.5 h-16 bg-cyan-300 rounded-full transform rotate-20 water-stream"></div>
+    <!-- Header / Navigation Bar -->
+    <header class="bg-slate-800/80 backdrop-blur border-b border-slate-700/60 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center space-x-3">
+                <div class="p-2 bg-emerald-500/10 border border-emerald-500/20 rounded-xl text-emerald-400">
+                    <i data-lucide="sprout" class="w-6 h-6"></i>
                 </div>
-              </div>
+                <div>
+                    <h1 class="font-bold text-lg text-white">Smart Farming System</h1>
+                    <p class="text-xs text-slate-400">Simulasi IoT & Telemetri Sensor Realtime</p>
+                </div>
             </div>
-          </div>
+            <!-- Status Koneksi Firebase -->
+            <div class="flex items-center space-x-2 bg-slate-900/60 px-3 py-1.5 rounded-full border border-slate-700/50">
+                <span id="conn-dot" class="w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse"></span>
+                <span id="conn-text" class="text-xs font-medium text-slate-300">Menghubungkan ke Firebase...</span>
+            </div>
+        </div>
+    </header>
 
-          <!-- Tanaman & Bedeng Tanah Layer -->
-          <div class="w-full relative z-10">
-            <div class="flex justify-around items-end px-4 sm:px-12 max-w-3xl mx-auto pb-1">
-              
-              <!-- Tanaman 1 -->
-              <div class="flex flex-col items-center swaying-plant">
-                <svg width="60" height="70" viewBox="0 0 60 70" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M30 70V30" stroke="#15803d" stroke-width="4" stroke-linecap="round"/>
-                  <path class="plant-leaf" d="M30 40C20 35 12 40 10 27C22 25 28 33 30 40Z" fill="#22c55e"/>
-                  <path class="plant-leaf" d="M30 33C40 28 48 33 50 20C38 18 32 26 30 33Z" fill="#16a34a"/>
-                </svg>
-              </div>
+    <main class="max-w-7xl mx-auto px-4 pt-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
 
-              <!-- Tanaman Utama 2 -->
-              <div class="flex flex-col items-center swaying-plant scale-110 sm:scale-125">
-                <svg width="80" height="100" viewBox="0 0 80 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M40 100V25" stroke="#166534" stroke-width="5" stroke-linecap="round"/>
-                  <path class="plant-leaf" d="M40 70C20 65 10 78 5 52C27 47 36 60 40 70Z" fill="#22c55e"/>
-                  <path class="plant-leaf" d="M40 60C60 55 70 68 75 42C53 37 44 50 40 60Z" fill="#15803d"/>
-                  <path class="plant-leaf" d="M40 42C22 34 16 46 11 25C28 23 37 35 40 42Z" fill="#4ade80"/>
-                  <path class="plant-leaf" d="M40 33C58 25 64 37 69 16C52 14 43 26 40 33Z" fill="#22c55e"/>
-                  <circle cx="40" cy="18" r="7" fill="#ef4444"/>
-                </svg>
-              </div>
+        <!-- KOLOM KIRI: Visual Simulasi Lahan & Animasi Tanaman/Keran (7 Cols) -->
+        <div class="lg:col-span-7 flex flex-col space-y-6">
+            <div class="bg-slate-800/60 border border-slate-700/60 rounded-2xl p-6 relative overflow-hidden flex flex-col justify-between min-h-[460px]">
+                
+                <!-- Background Langit -->
+                <div class="absolute inset-0 bg-gradient-to-b from-sky-900/40 via-slate-800/20 to-emerald-950/30"></div>
 
-              <!-- Tanaman 3 -->
-              <div class="flex flex-col items-center swaying-plant">
-                <svg width="60" height="75" viewBox="0 0 60 75" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M30 75V25" stroke="#15803d" stroke-width="4" stroke-linecap="round"/>
-                  <path class="plant-leaf" d="M30 50C15 45 8 55 6 36C22 32 27 44 30 50Z" fill="#22c55e"/>
-                  <path class="plant-leaf" d="M30 38C45 33 52 43 54 24C38 20 33 32 30 38Z" fill="#16a34a"/>
-                </svg>
-              </div>
+                <!-- Header Simulasi -->
+                <div class="relative z-10 flex justify-between items-start">
+                    <div>
+                        <span class="text-xs uppercase tracking-wider font-semibold text-emerald-400 bg-emerald-500/10 px-2.5 py-1 rounded-md border border-emerald-500/20">Live Visual Simulation</span>
+                        <h2 class="text-xl font-bold mt-2 text-white">Lahan Pertanian Otomatis</h2>
+                    </div>
+
+                    <!-- Indikator Cahaya / Matahari -->
+                    <div class="flex items-center space-x-2 bg-amber-500/10 border border-amber-500/20 px-3 py-1.5 rounded-xl">
+                        <i data-lucide="sun" class="w-5 h-5 text-amber-400 sun-glow"></i>
+                        <span id="sun-text" class="text-xs font-semibold text-amber-300">Cahaya: -- Lux</span>
+                    </div>
+                </div>
+
+                <!-- Area Utama Animasi Tanaman & Pipa Penyiram -->
+                <div class="relative z-10 my-auto py-8 flex justify-around items-end">
+
+                    <!-- Pipa Air & Sprinkler -->
+                    <div class="absolute top-0 left-0 right-0 flex justify-around px-12">
+                        <!-- Pipa Horisontal -->
+                        <div class="absolute top-4 left-4 right-4 h-2 bg-slate-700 rounded-full"></div>
+                        
+                        <!-- Nozzle Keran Kiri -->
+                        <div class="relative flex flex-col items-center">
+                            <div class="w-4 h-6 bg-slate-600 rounded-b-md z-10 border border-slate-500"></div>
+                            <!-- Animasi Air Menyiram (Kiri) -->
+                            <div id="spray-left" class="w-32 h-44 water-spray hidden rounded-b-full transform -rotate-12 origin-top"></div>
+                        </div>
+
+                        <!-- Nozzle Keran Kanan -->
+                        <div class="relative flex flex-col items-center">
+                            <div class="w-4 h-6 bg-slate-600 rounded-b-md z-10 border border-slate-500"></div>
+                            <!-- Animasi Air Menyiram (Kanan) -->
+                            <div id="spray-right" class="w-32 h-44 water-spray hidden rounded-b-full transform rotate-12 origin-top"></div>
+                        </div>
+                    </div>
+
+                    <!-- SVG Tanaman 1 -->
+                    <div class="flex flex-col items-center">
+                        <div id="plant1" class="sway transition-all duration-500 transform scale-90">
+                            <svg width="64" height="80" viewBox="0 0 64 80" fill="none">
+                                <path d="M32 70V30" stroke="#16a34a" stroke-width="4" stroke-linecap="round"/>
+                                <path d="M32 50C20 50 10 40 10 30C25 30 32 45 32 50Z" fill="#22c55e"/>
+                                <path d="M32 40C44 40 54 30 54 20C39 20 32 35 32 40Z" fill="#4ade80"/>
+                            </svg>
+                        </div>
+                        <span class="text-[11px] text-slate-400 mt-2 font-medium bg-slate-900/80 px-2 py-0.5 rounded">Tanaman A</span>
+                    </div>
+
+                    <!-- SVG Tanaman Utama -->
+                    <div class="flex flex-col items-center">
+                        <div id="plant2" class="sway transition-all duration-500 transform scale-110">
+                            <svg width="80" height="100" viewBox="0 0 80 100" fill="none">
+                                <path d="M40 90V20" stroke="#15803d" stroke-width="5" stroke-linecap="round"/>
+                                <path d="M40 60C20 60 5 45 5 30C25 30 40 50 40 60Z" fill="#16a34a"/>
+                                <path d="M40 45C60 45 75 30 75 15C55 15 40 35 40 45Z" fill="#22c55e"/>
+                                <path d="M40 30C28 30 18 18 18 8C30 8 40 22 40 30Z" fill="#4ade80"/>
+                            </svg>
+                        </div>
+                        <span class="text-[11px] text-slate-400 mt-2 font-medium bg-slate-900/80 px-2 py-0.5 rounded">Tanaman Utama</span>
+                    </div>
+
+                    <!-- SVG Tanaman 3 -->
+                    <div class="flex flex-col items-center">
+                        <div id="plant3" class="sway transition-all duration-500 transform scale-100">
+                            <svg width="64" height="80" viewBox="0 0 64 80" fill="none">
+                                <path d="M32 70V30" stroke="#16a34a" stroke-width="4" stroke-linecap="round"/>
+                                <path d="M32 45C18 45 8 35 8 25C22 25 32 40 32 45Z" fill="#22c55e"/>
+                                <path d="M32 55C46 55 56 45 56 35C42 35 32 50 32 55Z" fill="#15803d"/>
+                            </svg>
+                        </div>
+                        <span class="text-[11px] text-slate-400 mt-2 font-medium bg-slate-900/80 px-2 py-0.5 rounded">Tanaman B</span>
+                    </div>
+
+                </div>
+
+                <!-- Lapisan Tanah & Indikator Katup Keran -->
+                <div class="relative z-10 bg-amber-950/80 border-t-4 border-amber-800 rounded-b-xl p-3 flex justify-between items-center text-xs text-amber-200">
+                    <div class="flex items-center space-x-2">
+                        <i data-lucide="layers" class="w-4 h-4 text-amber-400"></i>
+                        <span>Kelembapan Tanah: <strong id="soil-status-text" class="text-white">Memeriksa...</strong></span>
+                    </div>
+                    <!-- Badge Status Keran/Solenoid Valve -->
+                    <div id="valve-badge" class="flex items-center space-x-1.5 px-3 py-1 rounded-full bg-slate-700 text-slate-300 font-semibold border border-slate-600 transition-all">
+                        <span id="valve-dot" class="w-2 h-2 rounded-full bg-slate-400"></span>
+                        <span id="valve-text">KERAN MATI</span>
+                    </div>
+                </div>
 
             </div>
 
-            <!-- Ground Dirt Bed -->
-            <div class="w-full h-8 bg-gradient-to-r from-amber-950 via-amber-900 to-amber-950 border-t-4 border-amber-800 rounded-b-2xl shadow-inner"></div>
-          </div>
+            <!-- Card Informatif Status Aktuator -->
+            <div id="actuator-banner" class="bg-slate-800/40 border border-slate-700/50 rounded-xl p-4 flex items-center justify-between transition-all">
+                <div class="flex items-center space-x-3">
+                    <div id="actuator-icon-bg" class="p-2.5 rounded-lg bg-slate-700 text-slate-400">
+                        <i data-lucide="droplets" class="w-5 h-5"></i>
+                    </div>
+                    <div>
+                        <h4 class="text-sm font-semibold text-white">Status Aktuator Penyiraman</h4>
+                        <p id="actuator-desc" class="text-xs text-slate-400">Menunggu pembacaan sensor dari Firebase...</p>
+                    </div>
+                </div>
+                <div class="text-xs font-semibold px-2.5 py-1 rounded bg-slate-700 text-slate-300">OTOMATIS</div>
+            </div>
+        </div>
+
+        <!-- KOLOM KANAN: Card Data Sensor Telemetri Realtime (5 Cols) -->
+        <div class="lg:col-span-5 flex flex-col space-y-4">
+            
+            <div class="flex justify-between items-center px-1">
+                <h3 class="text-base font-bold text-white flex items-center space-x-2">
+                    <i data-lucide="activity" class="w-4 h-4 text-sky-400"></i>
+                    <span>Telemetry Sensor Firebase</span>
+                </h3>
+                <span class="text-[11px] text-slate-400">Path: <code class="text-sky-400 font-mono">/sensorData</code></span>
+            </div>
+
+            <!-- Card 1: Humidity (Kelembapan) -->
+            <div class="bg-slate-800/60 border border-slate-700/60 rounded-xl p-4 flex items-center justify-between hover:border-sky-500/40 transition-all">
+                <div class="flex items-center space-x-3">
+                    <div class="p-3 bg-sky-500/10 border border-sky-500/20 rounded-xl text-sky-400">
+                        <i data-lucide="droplet" class="w-6 h-6"></i>
+                    </div>
+                    <div>
+                        <span class="text-xs font-medium text-slate-400">Humidity (Kelembapan)</span>
+                        <div class="flex items-baseline space-x-1 mt-0.5">
+                            <span id="humidityValue" class="text-2xl font-bold text-white">--</span>
+                            <span class="text-xs text-slate-400">%</span>
+                        </div>
+                    </div>
+                </div>
+                <div id="humidityStatus" class="text-xs px-2.5 py-1 rounded-full bg-slate-700 text-slate-300 font-medium">--</div>
+            </div>
+
+            <!-- Card 2: Temperature (Suhu) -->
+            <div class="bg-slate-800/60 border border-slate-700/60 rounded-xl p-4 flex items-center justify-between hover:border-rose-500/40 transition-all">
+                <div class="flex items-center space-x-3">
+                    <div class="p-3 bg-rose-500/10 border border-rose-500/20 rounded-xl text-rose-400">
+                        <i data-lucide="thermometer" class="w-6 h-6"></i>
+                    </div>
+                    <div>
+                        <span class="text-xs font-medium text-slate-400">Temperature (Suhu)</span>
+                        <div class="flex items-baseline space-x-1 mt-0.5">
+                            <span id="temperatureValue" class="text-2xl font-bold text-white">--</span>
+                            <span class="text-xs text-slate-400">°C</span>
+                        </div>
+                    </div>
+                </div>
+                <div id="temperatureStatus" class="text-xs px-2.5 py-1 rounded-full bg-slate-700 text-slate-300 font-medium">--</div>
+            </div>
+
+            <!-- Card 3: Light Intensity -->
+            <div class="bg-slate-800/60 border border-slate-700/60 rounded-xl p-4 flex items-center justify-between hover:border-amber-500/40 transition-all">
+                <div class="flex items-center space-x-3">
+                    <div class="p-3 bg-amber-500/10 border border-amber-500/20 rounded-xl text-amber-400">
+                        <i data-lucide="sun" class="w-6 h-6"></i>
+                    </div>
+                    <div>
+                        <span class="text-xs font-medium text-slate-400">Light Intensity (Cahaya)</span>
+                        <div class="flex items-baseline space-x-1 mt-0.5">
+                            <span id="lightIntensityValue" class="text-2xl font-bold text-white">--</span>
+                            <span class="text-xs text-slate-400">Lux</span>
+                        </div>
+                    </div>
+                </div>
+                <div id="lightIntensityStatus" class="text-xs px-2.5 py-1 rounded-full bg-slate-700 text-slate-300 font-medium">--</div>
+            </div>
+
+            <!-- Card 4: Distance -->
+            <div class="bg-slate-800/60 border border-slate-700/60 rounded-xl p-4 flex items-center justify-between hover:border-indigo-500/40 transition-all">
+                <div class="flex items-center space-x-3">
+                    <div class="p-3 bg-indigo-500/10 border border-indigo-500/20 rounded-xl text-indigo-400">
+                        <i data-lucide="ruler" class="w-6 h-6"></i>
+                    </div>
+                    <div>
+                        <span class="text-xs font-medium text-slate-400">Distance (Jarak Sensor/Air)</span>
+                        <div class="flex items-baseline space-x-1 mt-0.5">
+                            <span id="distanceValue" class="text-2xl font-bold text-white">--</span>
+                            <span class="text-xs text-slate-400">cm</span>
+                        </div>
+                    </div>
+                </div>
+                <div id="distanceStatus" class="text-xs px-2.5 py-1 rounded-full bg-slate-700 text-slate-300 font-medium">--</div>
+            </div>
+
+            <!-- Keterangan Logika Sistem -->
+            <div class="bg-slate-800/40 border border-slate-700/50 rounded-xl p-4 mt-2">
+                <span class="text-xs font-semibold text-slate-300 block mb-1">Rule Logika Simulasi Keran:</span>
+                <p class="text-xs text-slate-400 leading-relaxed">
+                    Keran air (<strong class="text-sky-300">Sprinkler</strong>) menyala secara otomatis jika <span class="text-emerald-400 font-semibold">Kelembapan &lt; 30%</span> atau <span class="text-rose-400 font-semibold">Suhu &gt; 40°C</span>.
+                </p>
+            </div>
 
         </div>
 
-      </div>
+    </main>
 
-    </div>
+    <!-- Script Firebase Realtime Database SDK (v10 Modular ES Module) -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-      
-      <!-- 1. Light Intensity Card -->
-      <div class="status-card bg-[#DCF2F1] text-[#0F1035] rounded-2xl p-5 shadow-lg border border-slate-700/30">
-        <div class="flex items-center justify-between text-xs font-bold uppercase tracking-wider mb-1">
-          <span>Light Intensity</span>
-          <i class="fa-solid fa-sun"></i>
-        </div>
-        <hr class="my-2 border-slate-400/40" id="lightIntensityHr" />
-        <div class="text-3xl font-extrabold my-2 tracking-tight" id="lightIntensityValue">-- %</div>
-        <hr class="my-2 border-slate-400/40" />
-        <div class="text-xs font-bold" id="lightIntensityStatus">Day</div>
-      </div>
+        // Inisialisasi Lucide Icon Set
+        lucide.createIcons();
 
-      <!-- 2. Humidity Card -->
-      <div class="status-card bg-[#DCF2F1] text-[#0F1035] rounded-2xl p-5 shadow-lg border border-slate-700/30">
-        <div class="flex items-center justify-between text-xs font-bold uppercase tracking-wider mb-1">
-          <span>Humidity</span>
-          <i class="fa-solid fa-droplet"></i>
-        </div>
-        <hr class="my-2 border-slate-400/40" id="humidityHr" />
-        <div class="text-3xl font-extrabold my-2 tracking-tight" id="humidityValue">-- %</div>
-        <hr class="my-2 border-slate-400/40" />
-        <div class="text-xs font-bold" id="humidityStatus">Good</div>
-      </div>
+        // Konfigurasi Firebase Anda
+        const firebaseConfig = {
+            apiKey: "AIzaSyAp-xABc3sjcsLa2GFBEOlK0BmdP7BjC2U",
+            authDomain: "wokwi-eea2f.firebaseapp.com",
+            databaseURL: "https://wokwi-eea2f-default-rtdb.firebaseio.com",
+            projectId: "wokwi-eea2f",
+            storageBucket: "wokwi-eea2f.firebasestorage.app",
+            messagingSenderId: "126495132632",
+            appId: "1:126495132632:web:bf9ed735696fdb72d200ad",
+            measurementId: "G-E9RN7W9R08"
+        };
 
-      <!-- 3. Temperature Card -->
-      <div class="status-card bg-[#DCF2F1] text-[#0F1035] rounded-2xl p-5 shadow-lg border border-slate-700/30">
-        <div class="flex items-center justify-between text-xs font-bold uppercase tracking-wider mb-1">
-          <span>Temperature</span>
-          <i class="fa-solid fa-temperature-three-quarters"></i>
-        </div>
-        <hr class="my-2 border-slate-400/40" id="temperatureHr" />
-        <div class="text-3xl font-extrabold my-2 tracking-tight" id="temperatureValue">-- °C</div>
-        <hr class="my-2 border-slate-400/40" />
-        <div class="text-xs font-bold" id="temperatureStatus">Good</div>
-      </div>
+        // Initialize Firebase App & Realtime Database
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
 
-      <!-- 4. Distance Card (Deteksi Serangga) -->
-      <div class="status-card bg-[#DCF2F1] text-[#0F1035] rounded-2xl p-5 shadow-lg border border-slate-700/30">
-        <div class="flex items-center justify-between text-xs font-bold uppercase tracking-wider mb-1">
-          <span>Distance (Deteksi)</span>
-          <i class="fa-solid fa-ruler-vertical"></i>
-        </div>
-        <hr class="my-2 border-slate-400/40" id="distanceHr" />
-        <div class="text-3xl font-extrabold my-2 tracking-tight" id="distanceValue">-- cm</div>
-        <hr class="my-2 border-slate-400/40" />
-        <div class="text-xs font-bold" id="distanceStatus">Alarm Off</div>
-      </div>
+        // Elemen DOM Dashboard
+        const connDot = document.getElementById('conn-dot');
+        const connText = document.getElementById('conn-text');
 
-    </div>
+        const humidityValEl = document.getElementById('humidityValue');
+        const humidityStatEl = document.getElementById('humidityStatus');
 
-    <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-5 backdrop-blur">
-      <div class="flex items-center justify-between mb-3">
-        <div class="flex items-center gap-2">
-          <i class="fa-solid fa-sliders text-emerald-400"></i>
-          <h3 class="text-sm font-bold text-slate-200">Panel Simulasi Pengujian Manual</h3>
-        </div>
-        <button id="resetSyncBtn" class="px-3 py-1 bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-300 border border-emerald-500/30 rounded-lg text-xs font-medium transition">
-          <i class="fa-solid fa-rotate mr-1"></i> Pulihkan Live Firebase
-        </button>
-      </div>
+        const tempValEl = document.getElementById('temperatureValue');
+        const tempStatEl = document.getElementById('temperatureStatus');
 
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-xs">
-        <div class="bg-slate-950/60 p-3 rounded-xl border border-slate-800">
-          <div class="flex justify-between mb-1">
-            <span class="text-slate-300 font-medium">LDR Raw (32 - 4063)</span>
-            <span id="simLdrVal" class="text-amber-400 font-mono">2000</span>
-          </div>
-          <input type="range" id="simLdr" min="32" max="4063" value="2000" class="w-full accent-amber-500 cursor-pointer" />
-        </div>
+        const lightValEl = document.getElementById('lightIntensityValue');
+        const lightStatEl = document.getElementById('lightIntensityStatus');
 
-        <div class="bg-slate-950/60 p-3 rounded-xl border border-slate-800">
-          <div class="flex justify-between mb-1">
-            <span class="text-slate-300 font-medium">Suhu / Temp (°C)</span>
-            <span id="simTempVal" class="text-rose-400 font-mono">25 °C</span>
-          </div>
-          <input type="range" id="simTemp" min="5" max="45" value="25" class="w-full accent-rose-500 cursor-pointer" />
-        </div>
+        const distValEl = document.getElementById('distanceValue');
+        const distStatEl = document.getElementById('distanceStatus');
 
-        <div class="bg-slate-950/60 p-3 rounded-xl border border-slate-800">
-          <div class="flex justify-between mb-1">
-            <span class="text-slate-300 font-medium">Kelembapan (%)</span>
-            <span id="simHumVal" class="text-cyan-400 font-mono">55 %</span>
-          </div>
-          <input type="range" id="simHum" min="10" max="95" value="55" class="w-full accent-cyan-500 cursor-pointer" />
-        </div>
+        // Elemen Animasi Visual
+        const sprayLeft = document.getElementById('spray-left');
+        const sprayRight = document.getElementById('spray-right');
+        const valveBadge = document.getElementById('valve-badge');
+        const valveDot = document.getElementById('valve-dot');
+        const valveText = document.getElementById('valve-text');
+        const soilStatusText = document.getElementById('soil-status-text');
+        const actuatorBanner = document.getElementById('actuator-banner');
+        const actuatorIconBg = document.getElementById('actuator-icon-bg');
+        const actuatorDesc = document.getElementById('actuator-desc');
 
-        <div class="bg-slate-950/60 p-3 rounded-xl border border-slate-800">
-          <div class="flex justify-between mb-1">
-            <span class="text-slate-300 font-medium">Jarak Hama (cm)</span>
-            <span id="simDistVal" class="text-indigo-400 font-mono">50 cm</span>
-          </div>
-          <input type="range" id="simDist" min="5" max="150" value="50" class="w-full accent-indigo-500 cursor-pointer" />
-        </div>
-      </div>
-    </div>
+        const plant1 = document.getElementById('plant1');
+        const plant2 = document.getElementById('plant2');
+        const plant3 = document.getElementById('plant3');
+        const sunText = document.getElementById('sun-text');
 
-  </main>
+        // Reference ke Node Firebase `/sensorData` sesuai Screenshot Anda
+        const sensorDataRef = ref(database, 'sensorData');
 
-  <script type="module">
-    // Import SDK Firebase v10.14.1
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
-    import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js";
+        // Real-time Event Listener (Mendeteksi perubahan data di Firebase)
+        onValue(sensorDataRef, (snapshot) => {
+            if (snapshot.exists()) {
+                const data = snapshot.val();
+                
+                // Indikator Koneksi Berhasil
+                connDot.className = "w-2.5 h-2.5 rounded-full bg-emerald-500";
+                connText.textContent = "Terhubung ke Firebase";
 
-    // Configuration
-    const firebaseConfig = {
-      apiKey: "AIzaSyAp-xABc3sjcsLa2GFBEOlK0BmdP7BjC2U",
-      authDomain: "wokwi-eea2f.firebaseapp.com",
-      databaseURL: "https://wokwi-eea2f-default-rtdb.firebaseio.com",
-      projectId: "wokwi-eea2f",
-      storageBucket: "wokwi-eea2f.appspot.com",
-      messagingSenderId: "126495132632",
-      appId: "1:126495132632:web:bf9ed735696fdb72d200ad",
-      measurementId: "G-E9RN7W9R08"
-    };
+                // Membaca Nilai dari Firebase
+                const humidity = parseFloat(data.humidity) || 0;
+                const temperature = parseFloat(data.temperature) || 0;
+                const lightIntensity = parseFloat(data.lightIntensity) || 0;
+                const distance = parseFloat(data.distance) || 0;
 
-    // Initialize Firebase
-    const app = initializeApp(firebaseConfig);
-    const db = getDatabase(app);
-    const sensorDataRef = ref(db, 'sensorData');
+                // Update UI Angka Sensor
+                updateHumidityUI(humidity);
+                updateTemperatureUI(temperature);
+                updateLightUI(lightIntensity);
+                updateDistanceUI(distance);
 
-    // DOM Connection status elements
-    const connectionBadge = document.getElementById('connectionBadge');
-    const connIcon = document.getElementById('connIcon');
-    const connText = document.getElementById('connText');
+                // Jalankan Evaluasi Logika Keran Air & Animasi Tanaman
+                evaluateActuatorAutomation(humidity, temperature);
 
-    // Simulation Visual Elements
-    const farmSky = document.getElementById('farmSky');
-    const skyIcon = document.getElementById('skyIcon');
-    const skyModeLabel = document.getElementById('skyModeLabel');
-    const celestialOrb = document.getElementById('celestialOrb');
-    const celestialIcon = document.getElementById('celestialIcon');
-    const lightPercentLabel = document.getElementById('lightPercentLabel');
-    
-    // Actuators
-    const acUnit = document.getElementById('acUnit');
-    const acFanIcon = document.getElementById('acFanIcon');
-    const acStatusText = document.getElementById('acStatusText');
-    const acWindStream = document.getElementById('acWindStream');
-    const acBadge = document.getElementById('acBadge');
+            } else {
+                connDot.className = "w-2.5 h-2.5 rounded-full bg-amber-500";
+                connText.textContent = "Data tidak ditemukan pada /sensorData";
+            }
+        }, (error) => {
+            console.error("Firebase Read Error:", error);
+            connDot.className = "w-2.5 h-2.5 rounded-full bg-rose-500";
+            connText.textContent = "Gagal Terhubung ke Firebase";
+        });
 
-    const heaterUnit = document.getElementById('heaterUnit');
-    const heaterBadge = document.getElementById('heaterBadge');
-
-    const sprinklerSpray = document.getElementById('sprinklerSpray');
-    const valveIcon = document.getElementById('valveIcon');
-    const wateringBadge = document.getElementById('wateringBadge');
-
-    const insectGraphic = document.getElementById('insectGraphic');
-    const sensorDistanceDisplay = document.getElementById('sensorDistanceDisplay');
-    const alarmBadge = document.getElementById('alarmBadge');
-
-    // Sliders
-    const simLdr = document.getElementById('simLdr');
-    const simTemp = document.getElementById('simTemp');
-    const simHum = document.getElementById('simHum');
-    const simDist = document.getElementById('simDist');
-
-    const simLdrVal = document.getElementById('simLdrVal');
-    const simTempVal = document.getElementById('simTempVal');
-    const simHumVal = document.getElementById('simHumVal');
-    const simDistVal = document.getElementById('simDistVal');
-    const resetSyncBtn = document.getElementById('resetSyncBtn');
-
-    let isManualOverride = false;
-
-    // Fungsi Kalibrasi LDR dari kode Anda
-    function calibrateLightIntensity(rawValue) {
-      const minValue = 32;
-      const maxValue = 4063;
-      let calculated = ((rawValue - minValue) / (maxValue - minValue)) * 100;
-      if (isNaN(calculated)) return 0;
-      return Math.max(0, Math.min(100, calculated));
-    }
-
-    // Fungsi Utama Pembaruan Data & Tampilan Dashboard
-    function processSensorData(data) {
-      const distance = Number(data.distance ?? 50);
-      const humidity = Number(data.humidity ?? 50);
-      const temperature = Number(data.temperature ?? 25);
-      const rawLightIntensity = Number(data.lightIntensity ?? 2000);
-
-      // 1. Kalibrasi nilai intensitas cahaya (0 - 100%)
-      const lightIntensity = calibrateLightIntensity(rawLightIntensity).toFixed(2);
-
-      // 2. Tentukan status Siang/Malam
-      const lightIntensityStatus = (lightIntensity > 50) ? "Day" : "Night";
-
-      // 3. Evaluasi Ambang Batas Suhu dan Kelembapan
-      let temperatureStatus, humidityStatus;
-
-      if (lightIntensityStatus === "Day") {
-        temperatureStatus = (temperature < 20) ? "Heater On" : (temperature > 30) ? "Cooler On" : "Good";
-        humidityStatus = (humidity < 40) ? "Watering On" : (humidity > 60) ? "Best" : "Good";
-      } else {
-        temperatureStatus = (temperature < 15) ? "Heater On" : (temperature > 25) ? "Cooler On" : "Good";
-        humidityStatus = (humidity < 50) ? "Watering On" : (humidity > 80) ? "Best" : "Good";
-      }
-
-      // 4. Deteksi Hama / Serangga berdasarkan jarak (< 30 cm)
-      const distanceStatus = (distance < 30) ? "Alarm On" : "Alarm Off";
-
-      // 5. Update Output Angka ke DOM Card
-      document.getElementById('temperatureValue').innerHTML = `${temperature} °C`;
-      document.getElementById('distanceValue').innerHTML = `${distance} cm`;
-      document.getElementById('humidityValue').innerHTML = `${humidity} %`;
-      document.getElementById('lightIntensityValue').innerHTML = `${lightIntensity} %`;
-
-      // Update Output Status Text ke DOM Card
-      document.getElementById('lightIntensityStatus').innerHTML = `${lightIntensityStatus}`;
-      document.getElementById('temperatureStatus').innerHTML = `${temperatureStatus}`;
-      document.getElementById('humidityStatus').innerHTML = `${humidityStatus}`;
-      document.getElementById('distanceStatus').innerHTML = `${distanceStatus}`;
-
-      // 6. Ubah Warna Card Berdasarkan Fungsi Warna Anda
-      changeCardColor('temperature', temperatureStatus);
-      changeCardColor('humidity', humidityStatus);
-      changeCardColor('distance', distanceStatus);
-      changeCardColor('lightIntensity', lightIntensityStatus);
-
-      // 7. SINKRONISASI VISUAL SIMULASI 2D
-      updateVisualSimulation({
-        lightIntensity,
-        lightIntensityStatus,
-        temperatureStatus,
-        humidityStatus,
-        distance,
-        distanceStatus
-      });
-    }
-
-    // Fungsi Pengubah Warna Card Sesuai Logika Anda
-    function changeCardColor(sensor, status) {
-      const card = document.querySelector(`#${sensor}Status`).parentElement;
-      const hrList = card.querySelectorAll('hr');
-
-      if (sensor === "temperature") {
-        if (status === "Heater On") {
-          card.style.backgroundColor = '#A72925';
-          card.style.color = '#FFFFFF';
-          hrList.forEach(hr => hr.style.borderColor = '#FFFFFF');
-        } else if (status === "Cooler On") {
-          card.style.backgroundColor = '#00BFFF';
-          card.style.color = '#FFFFFF';
-          hrList.forEach(hr => hr.style.borderColor = '#FFFFFF');
-        } else if (status === "Good") {
-          card.style.backgroundColor = '#DCF2F1';
-          card.style.color = '#0F1035';
-          hrList.forEach(hr => hr.style.borderColor = 'rgba(15, 16, 53, 0.2)');
+        // Helper Status Humidity
+        function updateHumidityUI(val) {
+            humidityValEl.textContent = val.toFixed(1);
+            if (val < 30) {
+                humidityStatEl.textContent = "Kering (Perlu Air)";
+                humidityStatEl.className = "text-xs px-2.5 py-1 rounded-full bg-rose-500/20 text-rose-300 border border-rose-500/30 font-medium";
+            } else if (val <= 70) {
+                humidityStatEl.textContent = "Optimal";
+                humidityStatEl.className = "text-xs px-2.5 py-1 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 font-medium";
+            } else {
+                humidityStatEl.textContent = "Sangat Lembap";
+                humidityStatEl.className = "text-xs px-2.5 py-1 rounded-full bg-sky-500/20 text-sky-300 border border-sky-500/30 font-medium";
+            }
         }
-      }
-      else if (sensor === "humidity") {
-        if (status === "Watering On") {
-          card.style.backgroundColor = '#00BFFF';
-          card.style.color = '#FFFFFF';
-          hrList.forEach(hr => hr.style.borderColor = '#FFFFFF');
-        } else if (status === "Best") {
-          card.style.backgroundColor = '#2C632C';
-          card.style.color = '#FFFFFF';
-          hrList.forEach(hr => hr.style.borderColor = '#FFFFFF');
-        } else if (status === "Good") {
-          card.style.backgroundColor = '#DCF2F1';
-          card.style.color = '#0F1035';
-          hrList.forEach(hr => hr.style.borderColor = 'rgba(15, 16, 53, 0.2)');
+
+        // Helper Status Temperature
+        function updateTemperatureUI(val) {
+            tempValEl.textContent = val.toFixed(1);
+            if (val > 38) {
+                tempStatEl.textContent = "Suhu Panas";
+                tempStatEl.className = "text-xs px-2.5 py-1 rounded-full bg-rose-500/20 text-rose-300 border border-rose-500/30 font-medium";
+            } else if (val >= 20) {
+                tempStatEl.textContent = "Normal";
+                tempStatEl.className = "text-xs px-2.5 py-1 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 font-medium";
+            } else {
+                tempStatEl.textContent = "Dingin";
+                tempStatEl.className = "text-xs px-2.5 py-1 rounded-full bg-sky-500/20 text-sky-300 border border-sky-500/30 font-medium";
+            }
         }
-      }
-      else if (sensor === "distance") {
-        if (status === "Alarm On") {
-          card.style.backgroundColor = '#A72925';
-          card.style.color = '#FFFFFF';
-          hrList.forEach(hr => hr.style.borderColor = '#FFFFFF');
-        } else {
-          card.style.backgroundColor = '#DCF2F1';
-          card.style.color = '#0F1035';
-          hrList.forEach(hr => hr.style.borderColor = 'rgba(15, 16, 53, 0.2)');
+
+        // Helper Status Light Intensity
+        function updateLightUI(val) {
+            lightValEl.textContent = Math.round(val);
+            sunText.textContent = `Cahaya: ${Math.round(val)} Lux`;
+            if (val > 600) {
+                lightStatEl.textContent = "Terang";
+                lightStatEl.className = "text-xs px-2.5 py-1 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30 font-medium";
+            } else {
+                lightStatEl.textContent = "Sedang / Redup";
+                lightStatEl.className = "text-xs px-2.5 py-1 rounded-full bg-slate-700 text-slate-300 font-medium";
+            }
         }
-      }
-      else if (sensor === "lightIntensity") {
-        if (status === "Day") {
-          card.style.backgroundColor = '#DCF2F1';
-          card.style.color = '#0F1035';
-          hrList.forEach(hr => hr.style.borderColor = 'rgba(15, 16, 53, 0.2)');
-        } else if (status === "Night") {
-          card.style.backgroundColor = '#000000';
-          card.style.color = '#FFFFFF';
-          hrList.forEach(hr => hr.style.borderColor = '#FFFFFF');
+
+        // Helper Status Distance
+        function updateDistanceUI(val) {
+            distValEl.textContent = Math.round(val);
+            if (val < 20) {
+                distStatEl.textContent = "Tangki Air Penuh";
+                distStatEl.className = "text-xs px-2.5 py-1 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 font-medium";
+            } else {
+                distStatEl.textContent = "Normal";
+                distStatEl.className = "text-xs px-2.5 py-1 rounded-full bg-slate-700 text-slate-300 font-medium";
+            }
         }
-      }
-    }
 
-    // Update Elemen Grafik Visual 2D Greenhouse
-    function updateVisualSimulation(params) {
-      const { lightIntensity, lightIntensityStatus, temperatureStatus, humidityStatus, distance, distanceStatus } = params;
+        // LOGIKA UTAMA: Kontrol Keran & Animasi Tanaman
+        function evaluateActuatorAutomation(humidity, temp) {
+            // Kondisi Ambang Batas: Keran MENYALA jika Kelembapan < 30% ATAU Suhu > 40°C
+            // (Nilai screenshot Anda: Humidity = 21.5%, Temp = 50.9°C -> Keran Otomatis Menyala)
+            const shouldWater = (humidity < 30) || (temp > 40);
 
-      // Daylight vs Night Simulation
-      lightPercentLabel.textContent = `Cahaya: ${lightIntensity}%`;
-      if (lightIntensityStatus === "Day") {
-        farmSky.className = "relative overflow-hidden rounded-3xl border border-slate-800 bg-gradient-to-b from-sky-950 via-slate-900 to-emerald-950/40 p-4 sm:p-8 shadow-2xl transition-all duration-700";
-        skyIcon.className = "fa-solid fa-sun text-amber-400";
-        skyModeLabel.textContent = "Mode: Siang (Day)";
-        
-        celestialOrb.className = "w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-gradient-to-tr from-amber-400 to-yellow-200 shadow-[0_0_30px_rgba(245,158,11,0.6)] flex items-center justify-center";
-        celestialIcon.className = "fa-solid fa-sun text-3xl sm:text-4xl text-amber-600";
-      } else {
-        farmSky.className = "relative overflow-hidden rounded-3xl border border-indigo-900/50 bg-gradient-to-b from-slate-950 via-slate-900 to-emerald-950/20 p-4 sm:p-8 shadow-2xl transition-all duration-700";
-        skyIcon.className = "fa-solid fa-moon text-indigo-300";
-        skyModeLabel.textContent = "Mode: Malam (Night)";
+            if (shouldWater) {
+                // 1. TAMPILKAN ANIMASI menyiram AIR
+                sprayLeft.classList.remove('hidden');
+                sprayRight.classList.remove('hidden');
 
-        celestialOrb.className = "w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-gradient-to-tr from-slate-300 to-indigo-100 shadow-[0_0_20px_rgba(199,210,254,0.4)] flex items-center justify-center";
-        celestialIcon.className = "fa-solid fa-moon text-3xl sm:text-4xl text-indigo-600";
-      }
+                // 2. AKTIFKAN BADGE & TEXT KERAN
+                valveBadge.className = "flex items-center space-x-1.5 px-3 py-1 rounded-full bg-sky-500/20 text-sky-300 border border-sky-500/40 font-semibold animate-pulse";
+                valveDot.className = "w-2 h-2 rounded-full bg-sky-400";
+                valveText.textContent = "KERAN MENYALA (MENYIRAM)";
+                soilStatusText.textContent = "Sedang Disiram Air...";
 
-      // Cooler / AC Visual Status
-      if (temperatureStatus === "Cooler On") {
-        acUnit.className = "bg-slate-800 border-2 border-cyan-400 rounded-xl p-2.5 shadow-xl shadow-cyan-500/20 flex items-center gap-3 w-40 sm:w-48";
-        acFanIcon.className = "fa-solid fa-snowflake text-cyan-400 animate-spin";
-        acStatusText.textContent = "COOLING ACTIVE";
-        acStatusText.className = "text-[9px] font-bold text-cyan-400";
-        acWindStream.classList.remove('hidden');
-        acBadge.classList.remove('hidden');
-      } else {
-        acUnit.className = "bg-slate-800 border-2 border-slate-600 rounded-xl p-2.5 shadow-xl flex items-center gap-3 w-40 sm:w-48";
-        acFanIcon.className = "fa-solid fa-fan text-slate-500";
-        acStatusText.textContent = "STANDBY";
-        acStatusText.className = "text-[9px] font-semibold text-slate-500";
-        acWindStream.classList.add('hidden');
-        acBadge.classList.add('hidden');
-      }
+                // 3. AKTIFKAN BANNER STATUS AKTUATOR
+                actuatorBanner.className = "bg-sky-500/10 border border-sky-500/30 rounded-xl p-4 flex items-center justify-between transition-all";
+                actuatorIconBg.className = "p-2.5 rounded-lg bg-sky-500/20 text-sky-400";
+                actuatorDesc.textContent = `Penyiraman Aktif! Kelembapan ${humidity}% atau Suhu ${temp}°C memicu keran menyala secara otomatis.`;
 
-      // Heater Visual Status
-      if (temperatureStatus === "Heater On") {
-        heaterUnit.classList.remove('hidden');
-        heaterBadge.classList.remove('hidden');
-      } else {
-        heaterUnit.classList.add('hidden');
-        heaterBadge.classList.add('hidden');
-      }
+                // 4. EFEK ANIMASI PERTUMBUHAN TANAMAN
+                plant1.classList.add('growing');
+                plant2.classList.add('growing');
+                plant3.classList.add('growing');
 
-      // Watering Sprinkler Visual Status
-      if (humidityStatus === "Watering On") {
-        sprinklerSpray.classList.remove('hidden');
-        valveIcon.className = "fa-solid fa-faucet text-cyan-400 animate-bounce";
-        wateringBadge.classList.remove('hidden');
-      } else {
-        sprinklerSpray.classList.add('hidden');
-        valveIcon.className = "fa-solid fa-faucet-drip text-slate-400";
-        wateringBadge.classList.add('hidden');
-      }
+            } else {
+                // MATIKAN KERAN AIR & ANIMASI
+                sprayLeft.classList.add('hidden');
+                sprayRight.classList.add('hidden');
 
-      // Insect / Serangga Visual Alarm (< 30cm)
-      sensorDistanceDisplay.textContent = `${distance} cm`;
-      if (distanceStatus === "Alarm On") {
-        insectGraphic.classList.remove('hidden');
-        alarmBadge.classList.remove('hidden');
-      } else {
-        insectGraphic.classList.add('hidden');
-        alarmBadge.classList.add('hidden');
-      }
-    }
+                valveBadge.className = "flex items-center space-x-1.5 px-3 py-1 rounded-full bg-slate-700 text-slate-300 font-semibold border border-slate-600";
+                valveDot.className = "w-2 h-2 rounded-full bg-slate-400";
+                valveText.textContent = "KERAN MATI";
+                soilStatusText.textContent = "Kelembapan Optimal";
 
-    // Mendengarkan Realtime Data dari Firebase
-    onValue(sensorDataRef, (snapshot) => {
-      if (snapshot.exists()) {
-        const data = snapshot.val();
-        
-        connectionBadge.className = "flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30";
-        connIcon.className = "fa-solid fa-circle-check text-[10px]";
-        connText.textContent = "RTDB Terhubung";
+                actuatorBanner.className = "bg-slate-800/40 border border-slate-700/50 rounded-xl p-4 flex items-center justify-between transition-all";
+                actuatorIconBg.className = "p-2.5 rounded-lg bg-slate-700 text-slate-400";
+                actuatorDesc.textContent = "Sistem otomatis stanby menunggu ambang batas sensor kelembapan.";
 
-        if (!isManualOverride) {
-          processSensorData(data);
-
-          // Update posisi slider
-          simLdr.value = data.lightIntensity ?? 2000;
-          simTemp.value = data.temperature ?? 25;
-          simHum.value = data.humidity ?? 55;
-          simDist.value = data.distance ?? 50;
-
-          simLdrVal.textContent = simLdr.value;
-          simTempVal.textContent = `${simTemp.value} °C`;
-          simHumVal.textContent = `${simHum.value} %`;
-          simDistVal.textContent = `${simDist.value} cm`;
+                plant1.classList.remove('growing');
+                plant2.classList.remove('growing');
+                plant3.classList.remove('growing');
+            }
         }
-      } else {
-        connText.textContent = "Node 'sensorData' Kosong";
-      }
-    }, (error) => {
-      console.error("Firebase Read Error: ", error);
-      connectionBadge.className = "flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold bg-rose-500/10 text-rose-400 border border-rose-500/30";
-      connIcon.className = "fa-solid fa-triangle-exclamation text-[10px]";
-      connText.textContent = "Gagal Membaca Firebase";
-    });
-
-    // Slider Event Handler untuk Pengujian Manual Langsung
-    function handleManualInput() {
-      isManualOverride = true;
-      connectionBadge.className = "flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold bg-indigo-500/10 text-indigo-400 border border-indigo-500/30";
-      connIcon.className = "fa-solid fa-sliders text-[10px]";
-      connText.textContent = "Mode Simulasi Slider";
-
-      simLdrVal.textContent = simLdr.value;
-      simTempVal.textContent = `${simTemp.value} °C`;
-      simHumVal.textContent = `${simHum.value} %`;
-      simDistVal.textContent = `${simDist.value} cm`;
-
-      processSensorData({
-        lightIntensity: Number(simLdr.value),
-        temperature: Number(simTemp.value),
-        humidity: Number(simHum.value),
-        distance: Number(simDist.value)
-      });
-    }
-
-    simLdr.addEventListener('input', handleManualInput);
-    simTemp.addEventListener('input', handleManualInput);
-    simHum.addEventListener('input', handleManualInput);
-    simDist.addEventListener('input', handleManualInput);
-
-    resetSyncBtn.addEventListener('click', () => {
-      isManualOverride = false;
-      connText.textContent = "Menyinkronkan ulang...";
-    });
-
-    // Initial render
-    processSensorData({
-      distance: 50,
-      humidity: 55,
-      temperature: 25,
-      lightIntensity: 2000
-    });
-  </script>
+    </script>
 </body>
 </html>
