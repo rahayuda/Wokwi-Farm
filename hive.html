@@ -3,17 +3,28 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dashboard Monitoring IoT</title>
-  <!-- CDN MQTT.js -->
+  <title>Dashboard Monitoring IoT Realtime</title>
   <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
   <style>
-    body { font-family: Arial, sans-serif; background: #f4f4f9; padding: 20px; }
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f4f4f9; padding: 20px; }
     .card-container { display: flex; gap: 15px; flex-wrap: wrap; }
-    .card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); min-width: 150px; text-align: center; }
-    .value { font-size: 24px; font-weight: bold; color: #007bff; margin-top: 10px; }
-    #status { font-weight: bold; margin-bottom: 20px; }
-    .connected { color: green; }
-    .disconnected { color: red; }
+    .card { 
+      background: white; 
+      padding: 20px; 
+      border-radius: 12px; 
+      box-shadow: 0 4px 10px rgba(0,0,0,0.05); 
+      min-width: 160px; 
+      text-align: center;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .card.updated {
+      transform: scale(1.03);
+      box-shadow: 0 6px 15px rgba(0,123,255,0.2);
+    }
+    .value { font-size: 28px; font-weight: bold; color: #007bff; margin-top: 10px; }
+    #status { font-weight: bold; margin-bottom: 20px; padding: 8px 12px; display: inline-block; border-radius: 6px; }
+    .connected { background: #e6f4ea; color: #137333; }
+    .disconnected { background: #fce8e6; color: #c5221f; }
   </style>
 </head>
 <body>
@@ -22,14 +33,47 @@
   <div id="status" class="disconnected">Status: Terputus</div>
 
   <div class="card-container">
-    <div class="card">Suhu<div id="temp" class="value">- °C</div></div>
-    <div class="card">Kelembapan<div id="hum" class="value">- %</div></div>
-    <div class="card">Jarak<div id="dist" class="value">- cm</div></div>
-    <div class="card">Cahaya<div id="lux" class="value">-</div></div>
+    <div class="card" id="card-temp">Suhu<div class="value"><span id="temp">0</span> °C</div></div>
+    <div class="card" id="card-hum">Kelembapan<div class="value"><span id="hum">0</span> %</div></div>
+    <div class="card" id="card-dist">Jarak<div class="value"><span id="dist">0</span> cm</div></div>
+    <div class="card" id="card-lux">Cahaya<div class="value"><span id="lux">0</span></div></div>
   </div>
 
   <script>
-    // Konfigurasi WebSocket HiveMQ Cloud Anda
+    // Menyimpan nilai angka terakhir untuk animasi
+    const currentValues = { temp: 0, hum: 0, dist: 0, lux: 0 };
+
+    // Fungsi Animasi Perubahan Angka (Count Up / Count Down)
+    function animateValue(id, start, end, duration, decimals = 0) {
+      if (start === end) return;
+      const obj = document.getElementById(id);
+      const card = document.getElementById('card-' + id);
+      const range = end - start;
+      let minTimer = 50;
+      let stepTime = Math.abs(Math.floor(duration / range));
+      stepTime = Math.max(stepTime, minTimer);
+      let startTime = new Date().getTime();
+      let endTime = startTime + duration;
+      let timer;
+
+      // Efek highlight kartu saat ada pergerakan data
+      if (card) card.classList.add('updated');
+
+      function run() {
+        let now = new Date().getTime();
+        let remaining = Math.max((endTime - now) / duration, 0);
+        let value = end - (remaining * range);
+        obj.innerHTML = value.toFixed(decimals);
+        if (value == end) {
+          clearInterval(timer);
+          if (card) setTimeout(() => card.classList.remove('updated'), 300);
+        }
+      }
+
+      timer = setInterval(run, stepTime);
+      run();
+    }
+
     const options = {
       connectTimeout: 4000,
       clientId: 'WebClient-' + Math.random().toString(16).substring(2, 8),
@@ -37,52 +81,45 @@
       password: '#BumbleB33*',
     };
 
-    // WSS URL menggunakan port WebSocket HiveMQ (8884)
     const host = 'wss://f0a6886bea0d4650be2e2293bcb31c66.s1.eu.hivemq.cloud:8884/mqtt';
-
-    console.log('Menghubungkan ke HiveMQ Cloud...');
     const client = mqtt.connect(host, options);
-
     const statusEl = document.getElementById('status');
 
-    // Event saat berhasil terhubung
     client.on('connect', () => {
-      console.log('Terhubung ke Broker!');
       statusEl.textContent = 'Status: Terhubung';
-      statusEl.className = 'connected';
-
-      // Subscribe ke topik sensor Anda
-      client.subscribe('sensor/data', (err) => {
-        if (!err) {
-          console.log('Berhasil Subscribe ke topik: sensor/data');
-        }
-      });
+      statusEl.className = 'status connected';
+      client.subscribe('sensor/data');
     });
 
-    // Event saat menerima pesan dari ESP32
     client.on('message', (topic, message) => {
-      console.log('Pesan diterima:', message.toString());
       try {
         const data = JSON.parse(message.toString());
-        
-        // Update elemen HTML
-        if(data.temp !== undefined) document.getElementById('temp').innerText = data.temp + ' °C';
-        if(data.hum !== undefined) document.getElementById('hum').innerText = data.hum + ' %';
-        if(data.dist !== undefined) document.getElementById('dist').innerText = data.dist + ' cm';
-        if(data.lux !== undefined) document.getElementById('lux').innerText = data.lux;
+
+        // Jalankan animasi pergerakan angka jika data tersedia
+        if (data.temp !== undefined) {
+          animateValue('temp', currentValues.temp, data.temp, 1000, 2);
+          currentValues.temp = data.temp;
+        }
+        if (data.hum !== undefined) {
+          animateValue('hum', currentValues.hum, data.hum, 1000, 2);
+          currentValues.hum = data.hum;
+        }
+        if (data.dist !== undefined) {
+          animateValue('dist', currentValues.dist, data.dist, 1000, 0);
+          currentValues.dist = data.dist;
+        }
+        if (data.lux !== undefined) {
+          animateValue('lux', currentValues.lux, data.lux, 1000, 0);
+          currentValues.lux = data.lux;
+        }
       } catch (e) {
         console.error('Gagal parse JSON:', e);
       }
     });
 
-    // Event jika koneksi error / terputus
-    client.on('error', (err) => {
-      console.error('Koneksi error:', err);
-    });
-
     client.on('close', () => {
       statusEl.textContent = 'Status: Terputus';
-      statusEl.className = 'disconnected';
+      statusEl.className = 'status disconnected';
     });
   </script>
 </body>
