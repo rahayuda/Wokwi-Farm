@@ -454,11 +454,11 @@
         if (step.type === 'FOUND') {
           activeWrapper.classList.remove('eliminated');
           activeWrapper.classList.add('found');
-          activeInner.className = 'w-14 h-16 md:w-16 md:h-20 rounded-2xl bg-emerald-500 border-2 border-emerald-400 text-white shadow-xl flex items-center justify-center font-mono font-extrabold text-xl md:text-2xl transition-all ring-4 ring-emerald-200';
+          activeInner.className = 'w-14 h-16 md:w-16 md:h-20 rounded-2xl bg-emerald-100/80 border-2 border-emerald-500 text-emerald-800 shadow-lg shadow-emerald-500/20 flex items-center justify-center font-mono font-extrabold text-xl md:text-2xl transition-all ring-4 ring-emerald-300/40 backdrop-blur-sm';
         } else {
           activeWrapper.classList.remove('eliminated');
           activeWrapper.classList.add('active');
-          activeInner.className = 'w-14 h-16 md:w-16 md:h-20 rounded-2xl bg-amber-500 border-2 border-amber-400 text-slate-950 shadow-xl flex items-center justify-center font-mono font-extrabold text-xl md:text-2xl transition-all ring-4 ring-amber-200';
+          activeInner.className = 'w-14 h-16 md:w-16 md:h-20 rounded-2xl bg-amber-100/80 border-2 border-amber-500 text-amber-900 shadow-lg shadow-amber-500/20 flex items-center justify-center font-mono font-extrabold text-xl md:text-2xl transition-all ring-4 ring-amber-300/40 backdrop-blur-sm';
         }
       }
 
