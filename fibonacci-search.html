@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Simulasi Visual Fibonacci Search</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+  
+  <style>
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+    .font-mono {
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    /* Animasi Kotak Array */
+    .num-box {
+      transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .num-box.active {
+      transform: translateY(-12px) scale(1.08);
+    }
+    .num-box.eliminated {
+      opacity: 0.3;
+      filter: grayscale(80%);
+      transform: scale(0.95);
+    }
+    .num-box.found {
+      transform: translateY(-16px) scale(1.15);
+      animation: pulseSuccess 1.5s infinite alternate ease-in-out;
+    }
+
+    @keyframes pulseSuccess {
+      from { box-shadow: 0 0 15px rgba(16, 185, 129, 0.4); }
+      to { box-shadow: 0 0 30px rgba(16, 185, 129, 0.9); }
+    }
+
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+      height: 6px;
+      width: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #f1f5f9;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen pb-16 selection:bg-amber-300 selection:text-slate-900">
+
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm backdrop-blur-md bg-white/90">
+    <div class="max-w-6xl mx-auto px-6 py-4 flex flex-wrap items-center justify-between gap-4">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500 to-amber-600 flex items-center justify-center text-white font-mono font-bold text-xl shadow-md shadow-amber-500/20">
+          Fib
+        </div>
+        <div>
+          <h1 class="font-bold text-lg text-slate-900 leading-tight">Fibonacci Search Visualizer</h1>
+          <p class="text-xs text-slate-500">Simulasi Pencarian Elemen Berbasis Proporsi Fibonacci</p>
+        </div>
+      </div>
+
+      <!-- Tombol Buat Array Baru -->
+      <div class="flex items-center gap-2">
+        <button id="generateBtn" class="px-4 py-2 text-xs md:text-sm font-semibold rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 transition-all border border-slate-300 flex items-center gap-2">
+          <svg class="w-4 h-4 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+          </svg>
+          Acak 10 Angka Terurut
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-6xl mx-auto px-6 pt-8 space-y-8">
+
+    <section class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm space-y-6">
+      <div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
+        
+        <!-- Input Target Pencarian -->
+        <div class="space-y-2 flex-1 max-w-md">
+          <label for="targetInput" class="block text-xs font-semibold uppercase tracking-wider text-slate-500">
+            Angka Yang Dicari (Target):
+          </label>
+          <div class="flex items-center gap-2">
+            <input type="number" id="targetInput" placeholder="Masukkan angka..." 
+                   class="w-full px-4 py-2.5 rounded-xl border border-slate-300 bg-slate-50 text-slate-800 font-mono text-base font-bold focus:outline-none focus:ring-2 focus:ring-amber-500 focus:bg-white transition-all">
+            <button id="searchBtn" class="px-6 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold text-sm transition-all shadow-md shadow-amber-500/20 shrink-0">
+              Cari Sekarang
+            </button>
+          </div>
+        </div>
+
+        <!-- Kontrol Jalur Simulasi -->
+        <div class="flex items-center gap-2">
+          <button id="prevStepBtn" disabled class="p-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 disabled:opacity-40 disabled:cursor-not-allowed border border-slate-200 transition-all">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+          </button>
+          
+          <button id="playBtn" class="px-5 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-semibold text-sm transition-all flex items-center gap-2 shadow-sm">
+            <svg id="playIcon" class="w-4 h-4 text-amber-400" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+            <span id="playBtnText">Putar Otomatis</span>
+          </button>
+
+          <button id="nextStepBtn" disabled class="p-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 disabled:opacity-40 disabled:cursor-not-allowed border border-slate-200 transition-all">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+          </button>
+
+          <button id="resetBtn" class="p-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 border border-slate-200 transition-all ml-2" title="Reset Simulasi">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+          </button>
+        </div>
+
+      </div>
+
+      <!-- Informasi Pengatur Kecepatan & Keterangan Warna -->
+      <div class="flex flex-wrap items-center justify-between border-t border-slate-100 pt-4 text-xs text-slate-500 gap-4">
+        <div class="flex items-center gap-4 flex-wrap">
+          <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-amber-500"></span> Indeks Diperiksa (i)</span>
+          <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-indigo-500"></span> Batas Offset</span>
+          <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-emerald-500"></span> Ditemukan</span>
+          <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-slate-300"></span> Dieliminasi</span>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <label for="speedSlider" class="font-medium">Kecepatan Animasi:</label>
+          <input type="range" id="speedSlider" min="500" max="2500" value="1200" step="100" class="w-24 accent-amber-500 cursor-pointer">
+        </div>
+      </div>
+    </section>
+
+    <section class="bg-white border border-slate-200 rounded-2xl p-8 shadow-sm space-y-6">
+      <div class="flex items-center justify-between border-b border-slate-100 pb-4">
+        <h2 class="font-bold text-slate-900 text-sm uppercase tracking-wider">Visual Array (10 Angka Terurut)</h2>
+        <span id="arrayLengthBadge" class="text-xs font-mono font-semibold bg-amber-100 text-amber-800 px-2.5 py-1 rounded-md border border-amber-200">Length N = 10</span>
+      </div>
+
+      <!-- Container Box Angka -->
+      <div class="overflow-x-auto pb-6 pt-4">
+        <div id="arrayContainer" class="flex items-center justify-center gap-3 min-w-[650px] px-4">
+          <!-- Box akan di-generate oleh JS -->
+        </div>
+      </div>
+    </section>
+
+    <section class="grid grid-cols-1 md:grid-cols-12 gap-6">
+      
+      <!-- Panel Status Fibonacci Variable (Span 5) -->
+      <div class="md:col-span-5 bg-white border border-slate-200 rounded-2xl p-6 shadow-sm space-y-4">
+        <h3 class="font-bold text-slate-900 text-sm uppercase tracking-wider border-b border-slate-100 pb-3 flex items-center justify-between">
+          <span>Variabel Fibonacci</span>
+          <span class="text-xs text-amber-600 font-mono">F<sub>k</sub> = F<sub>k-1</sub> + F<sub>k-2</sub></span>
+        </h3>
+
+        <div class="grid grid-cols-3 gap-3 text-center">
+          <div class="bg-amber-50 border border-amber-200 rounded-xl p-3">
+            <span class="block text-xs font-mono text-amber-700 mb-1">F<sub>k</sub> (Fibo Murni)</span>
+            <span id="fibKVal" class="font-mono font-extrabold text-2xl text-amber-900">-</span>
+          </div>
+
+          <div class="bg-slate-50 border border-slate-200 rounded-xl p-3">
+            <span class="block text-xs font-mono text-slate-500 mb-1">F<sub>k-1</sub></span>
+            <span id="fibK1Val" class="font-mono font-bold text-xl text-slate-800">-</span>
+          </div>
+
+          <div class="bg-slate-50 border border-slate-200 rounded-xl p-3">
+            <span class="block text-xs font-mono text-slate-500 mb-1">F<sub>k-2</sub> (Langkah)</span>
+            <span id="fibK2Val" class="font-mono font-bold text-xl text-slate-800">-</span>
+          </div>
+        </div>
+
+        <div class="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-2 font-mono text-xs">
+          <div class="flex justify-between items-center text-slate-600">
+            <span>Offset Terakhir:</span>
+            <span id="offsetVal" class="font-bold text-indigo-600">-1</span>
+          </div>
+          <div class="flex justify-between items-center text-slate-600">
+            <span>Indeks Diperiksa (i):</span>
+            <span id="indexIVal" class="font-bold text-amber-600">min(offset + F<sub>k-2</sub>, N-1)</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Panel Langkah & Penjelasan Logika (Span 7) -->
+      <div class="md:col-span-7 bg-slate-900 text-white border border-slate-800 rounded-2xl p-6 shadow-md flex flex-col justify-between">
+        <div class="space-y-3">
+          <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+            <span class="text-xs font-mono text-amber-400 font-semibold uppercase tracking-wider">Logika Langkah Demi Langkah</span>
+            <span id="stepCounter" class="text-xs font-mono bg-slate-800 text-slate-300 px-2.5 py-0.5 rounded">Langkah 0/0</span>
+          </div>
+
+          <p id="explanationText" class="text-sm md:text-base text-slate-300 leading-relaxed min-h-[70px] flex items-center">
+            Silakan masukkan angka target di atas dan klik tombol "Cari Sekarang" untuk memulai visualisasi pencarian Fibonacci.
+          </p>
+        </div>
+
+        <div id="formulaBox" class="mt-4 p-3 bg-slate-950/80 rounded-xl border border-slate-800 text-xs font-mono text-amber-300 hidden">
+          <!-- Rumus aktif akan muncul di sini -->
+        </div>
+      </div>
+
+    </section>
+
+  </main>
+
+  <script>
+    // State Aplikasi
+    let numberArray = [];
+    let searchTarget = null;
+    let stepsHistory = [];
+    let currentStepIndex = -1;
+    let isPlaying = false;
+    let playInterval = null;
+    let animationSpeed = 1200;
+
+    // Elemen DOM
+    const arrayContainer = document.getElementById('arrayContainer');
+    const targetInput = document.getElementById('targetInput');
+    const searchBtn = document.getElementById('searchBtn');
+    const generateBtn = document.getElementById('generateBtn');
+    const prevStepBtn = document.getElementById('prevStepBtn');
+    const nextStepBtn = document.getElementById('nextStepBtn');
+    const playBtn = document.getElementById('playBtn');
+    const playBtnText = document.getElementById('playBtnText');
+    const playIcon = document.getElementById('playIcon');
+    const resetBtn = document.getElementById('resetBtn');
+    const speedSlider = document.getElementById('speedSlider');
+
+    const fibKVal = document.getElementById('fibKVal');
+    const fibK1Val = document.getElementById('fibK1Val');
+    const fibK2Val = document.getElementById('fibK2Val');
+    const offsetVal = document.getElementById('offsetVal');
+    const indexIVal = document.getElementById('indexIVal');
+    const explanationText = document.getElementById('explanationText');
+    const stepCounter = document.getElementById('stepCounter');
+    const formulaBox = document.getElementById('formulaBox');
+
+    // Generate Array 10 Angka Acak yang Terurut
+    function generateSortedArray(size = 10) {
+      stopAutoPlay();
+      numberArray = [];
+      let currentNum = Math.floor(Math.random() * 8) + 3;
+      for (let i = 0; i < size; i++) {
+        numberArray.push(currentNum);
+        currentNum += Math.floor(Math.random() * 12) + 4;
+      }
+      renderArrayBoxes();
+      resetSimulationState();
+      
+      // Isikan target opsional dari salah satu angka array secara acak
+      const randomSample = numberArray[Math.floor(Math.random() * size)];
+      targetInput.value = randomSample;
+    }
+
+    // Render Box Array ke DOM
+    function renderArrayBoxes() {
+      arrayContainer.innerHTML = '';
+      numberArray.forEach((val, idx) => {
+        const boxWrapper = document.createElement('div');
+        boxWrapper.className = 'flex flex-col items-center gap-2 num-box';
+        boxWrapper.id = `box-wrapper-${idx}`;
+
+        boxWrapper.innerHTML = `
+          <div id="box-${idx}" class="w-14 h-16 md:w-16 md:h-20 rounded-2xl bg-white border-2 border-slate-200 shadow-md flex items-center justify-center font-mono font-extrabold text-lg md:text-xl text-slate-800 transition-all">
+            ${val}
+          </div>
+          <span class="font-mono text-xs font-bold text-slate-400">Idx ${idx}</span>
+        `;
+        arrayContainer.appendChild(boxWrapper);
+      });
+    }
+
+    // Logika Algoritma Fibonacci Search
+    function buildFibonacciSearchSteps(arr, x) {
+      const steps = [];
+      const n = arr.length;
+
+      // Step 0: Inisialisasi Deret Fibonacci terkecil yang >= N
+      let fibK2 = 0; // (k-2)-th Fibonacci number
+      let fibK1 = 1; // (k-1)-th Fibonacci number
+      let fibK = fibK2 + fibK1; // k-th Fibonacci number
+
+      while (fibK < n) {
+        fibK2 = fibK1;
+        fibK1 = fibK;
+        fibK = fibK2 + fibK1;
+      }
+
+      let offset = -1;
+
+      steps.push({
+        type: 'INIT',
+        fibK, fibK1, fibK2, offset,
+        i: null,
+        eliminatedIndices: [],
+        explanation: `Menemukan angka Fibonacci terkecil F<sub>k</sub> = <b>${fibK}</b> yang $\\ge$ N (${n}). Kita tentukan F<sub>k-1</sub> = ${fibK1}, F<sub>k-2</sub> = ${fibK2}, dan Offset awal = -1.`,
+        formula: `Fibonacci: [${fibK2}, ${fibK1}, ${fibK}] | Offset: -1`
+      });
+
+      let foundIndex = -1;
+      let eliminated = new Set();
+
+      while (fibK > 1) {
+        // Hitung indeks i yang akan diperiksa
+        let i = Math.min(offset + fibK2, n - 1);
+
+        steps.push({
+          type: 'CHECK_INDEX',
+          fibK, fibK1, fibK2, offset, i,
+          eliminatedIndices: Array.from(eliminated),
+          explanation: `Menghitung indeks pemeriksaan <b>i = min(offset + F<sub>k-2</sub>, N - 1)</b> = min(${offset} + ${fibK2}, ${n-1}) = <b>${i}</b>. Membandingkan nilai Array[${i}] (${arr[i]}) dengan Target (${x}).`,
+          formula: `Hitung i: min(${offset} + ${fibK2}, ${n-1}) = ${i} | Bandingkan: ${arr[i]} vs ${x}`
+        });
+
+        if (arr[i] < x) {
+          // Target lebih besar, geser pencarian ke kanan
+          const prevFibK = fibK, prevFibK1 = fibK1, prevFibK2 = fibK2;
+          fibK = fibK1;
+          fibK1 = fibK2;
+          fibK2 = fibK - fibK1;
+          
+          // Semua indeks dari offset hingga i dieliminasi
+          for (let k = offset; k <= i; k++) {
+            if (k >= 0) eliminated.add(k);
+          }
+          offset = i;
+
+          steps.push({
+            type: 'MOVE_RIGHT',
+            fibK, fibK1, fibK2, offset, i,
+            eliminatedIndices: Array.from(eliminated),
+            explanation: `Karena Array[${i}] (${arr[i]}) < Target (${x}), maka target pasti berada di sebelah kanan indeks ${i}. Geser offset ke <b>${offset}</b> dan turunkan deret Fibonacci ke [${fibK2}, ${fibK1}, ${fibK}].`,
+            formula: `Target > ${arr[i]} → Offset baru = ${i} | Geser Fibonacci kebawah`
+          });
+
+        } else if (arr[i] > x) {
+          // Target lebih kecil, geser pencarian ke kiri
+          fibK = fibK2;
+          fibK1 = fibK1 - fibK2;
+          fibK2 = fibK - fibK1;
+
+          // Eliminasi elemen di kanan indeks i
+          for (let k = i; k < n; k++) {
+            eliminated.add(k);
+          }
+
+          steps.push({
+            type: 'MOVE_LEFT',
+            fibK, fibK1, fibK2, offset, i,
+            eliminatedIndices: Array.from(eliminated),
+            explanation: `Karena Array[${i}] (${arr[i]}) > Target (${x}), maka target pasti berada di sebelah kiri indeks ${i}. Offset tetap <b>${offset}</b>, dan deret Fibonacci dipangkas ke [${fibK2}, ${fibK1}, ${fibK}].`,
+            formula: `Target < ${arr[i]} → Eliminasi kanan | Pangkas Fibonacci`
+          });
+
+        } else {
+          // Target Ditemukan!
+          foundIndex = i;
+          steps.push({
+            type: 'FOUND',
+            fibK, fibK1, fibK2, offset, i,
+            eliminatedIndices: Array.from(eliminated),
+            explanation: `🎉 <b>SUKSES!</b> Nilai Array[${i}] = <b>${arr[i]}</b> sama persis dengan Target (<b>${x}</b>). Elemen ditemukan pada <b>Indeks ${i}</b>.`,
+            formula: `Array[${i}] == ${x} → DITEMUKAN!`
+          });
+          return steps;
+        }
+      }
+
+      // Memeriksa elemen terakhir jika fibK1 == 1 dan offset+1 belum diperiksa
+      if (fibK1 === 1 && (offset + 1) < n && arr[offset + 1] === x) {
+        let i = offset + 1;
+        steps.push({
+          type: 'FOUND',
+          fibK, fibK1, fibK2, offset, i,
+          eliminatedIndices: Array.from(eliminated),
+          explanation: `🎉 <b>SUKSES!</b> Memeriksa sisa elemen offset + 1 (Indeks ${i}). Nilai Array[${i}] = <b>${arr[i]}</b> cocok dengan Target.`,
+          formula: `Array[${i}] == ${x} → DITEMUKAN!`
+        });
+        return steps;
+      }
+
+      // Target Tidak Ditemukan
+      steps.push({
+        type: 'NOT_FOUND',
+        fibK: 0, fibK1: 0, fibK2: 0, offset, i: null,
+        eliminatedIndices: Array.from({length: n}, (_, k) => k),
+        explanation: `❌ <b>TIDAK DITEMUKAN:</b> Angka Target <b>${x}</b> tidak ada dalam array setelah seluruh ruang pencarian diperiksa.`,
+        formula: `Pencarian Selesai → Target Tidak Ada`
+      });
+
+      return steps;
+    }
+
+    // Tampilkan Step Spesifik ke Antarmuka Visual
+    function renderStep(stepIndex) {
+      if (stepIndex < 0 || stepIndex >= stepsHistory.length) return;
+
+      const step = stepsHistory[stepIndex];
+      currentStepIndex = stepIndex;
+
+      // Update Teks Informasi Variabel
+      fibKVal.textContent = step.fibK;
+      fibK1Val.textContent = step.fibK1;
+      fibK2Val.textContent = step.fibK2;
+      offsetVal.textContent = step.offset;
+      indexIVal.textContent = step.i !== null ? step.i : '-';
+
+      stepCounter.textContent = `Langkah ${stepIndex + 1}/${stepsHistory.length}`;
+      explanationText.innerHTML = step.explanation;
+      formulaBox.classList.remove('hidden');
+      formulaBox.innerHTML = `<strong>RUMUS SAAT INI:</strong> ${step.formula}`;
+
+      // Reset Gaya Semua Box
+      for (let idx = 0; idx < numberArray.length; idx++) {
+        const boxWrapper = document.getElementById(`box-wrapper-${idx}`);
+        const boxInner = document.getElementById(`box-${idx}`);
+        
+        boxWrapper.className = 'flex flex-col items-center gap-2 num-box';
+        boxInner.className = 'w-14 h-16 md:w-16 md:h-20 rounded-2xl bg-white border-2 border-slate-200 shadow-md flex items-center justify-center font-mono font-extrabold text-lg md:text-xl text-slate-800 transition-all';
+      }
+
+      // Tandai Box yang Dieliminasi
+      step.eliminatedIndices.forEach(idx => {
+        const boxWrapper = document.getElementById(`box-wrapper-${idx}`);
+        const boxInner = document.getElementById(`box-${idx}`);
+        if (boxWrapper && boxInner) {
+          boxWrapper.classList.add('eliminated');
+          boxInner.classList.add('bg-slate-100', 'border-slate-300', 'text-slate-400');
+        }
+      });
+
+      // Tandai Batas Offset (jika valid)
+      if (step.offset >= 0 && step.offset < numberArray.length) {
+        const offsetInner = document.getElementById(`box-${step.offset}`);
+        if (offsetInner && step.type !== 'FOUND') {
+          offsetInner.classList.remove('border-slate-200');
+          offsetInner.classList.add('border-indigo-500', 'ring-2', 'ring-indigo-200');
+        }
+      }
+
+      // Tandai Indeks Aktif yang Diperiksa (i)
+      if (step.i !== null && step.i >= 0 && step.i < numberArray.length) {
+        const activeWrapper = document.getElementById(`box-wrapper-${step.i}`);
+        const activeInner = document.getElementById(`box-${step.i}`);
+
+        if (step.type === 'FOUND') {
+          activeWrapper.classList.remove('eliminated');
+          activeWrapper.classList.add('found');
+          activeInner.className = 'w-14 h-16 md:w-16 md:h-20 rounded-2xl bg-emerald-500 border-2 border-emerald-400 text-white shadow-xl flex items-center justify-center font-mono font-extrabold text-xl md:text-2xl transition-all';
+        } else {
+          activeWrapper.classList.remove('eliminated');
+          activeWrapper.classList.add('active');
+          activeInner.className = 'w-14 h-16 md:w-16 md:h-20 rounded-2xl bg-amber-500 border-2 border-amber-400 text-slate-950 shadow-xl flex items-center justify-center font-mono font-extrabold text-xl md:text-2xl transition-all ring-4 ring-amber-200';
+        }
+      }
+
+      // Update Navigasi Tombol
+      prevStepBtn.disabled = stepIndex === 0;
+      nextStepBtn.disabled = stepIndex === stepsHistory.length - 1;
+    }
+
+    // Memulai Pencarian Baru
+    function startSearch() {
+      const val = parseInt(targetInput.value);
+      if (isNaN(val)) {
+        explanationText.innerHTML = '<span class="text-amber-400 font-bold">⚠️ Harap masukkan angka target yang valid!</span>';
+        return;
+      }
+      searchTarget = val;
+      stepsHistory = buildFibonacciSearchSteps(numberArray, searchTarget);
+      currentStepIndex = 0;
+      renderStep(0);
+    }
+
+    // Otomatisasi Playback (Putar / Henti)
+    function toggleAutoPlay() {
+      if (isPlaying) {
+        stopAutoPlay();
+      } else {
+        if (stepsHistory.length === 0) startSearch();
+        if (currentStepIndex >= stepsHistory.length - 1) currentStepIndex = 0;
+        
+        isPlaying = true;
+        playBtnText.textContent = 'Jeda (Pause)';
+        playIcon.innerHTML = '<path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>';
+        
+        playInterval = setInterval(() => {
+          if (currentStepIndex < stepsHistory.length - 1) {
+            currentStepIndex++;
+            renderStep(currentStepIndex);
+          } else {
+            stopAutoPlay();
+          }
+        }, animationSpeed);
+      }
+    }
+
+    function stopAutoPlay() {
+      isPlaying = false;
+      clearInterval(playInterval);
+      playBtnText.textContent = 'Putar Otomatis';
+      playIcon.innerHTML = '<path d="M8 5v14l11-7z"/>';
+    }
+
+    function resetSimulationState() {
+      stopAutoPlay();
+      stepsHistory = [];
+      currentStepIndex = -1;
+      fibKVal.textContent = '-';
+      fibK1Val.textContent = '-';
+      fibK2Val.textContent = '-';
+      offsetVal.textContent = '-1';
+      indexIVal.textContent = '-';
+      stepCounter.textContent = 'Langkah 0/0';
+      explanationText.innerHTML = 'Silakan masukkan angka target di atas dan klik tombol "Cari Sekarang" untuk memulai visualisasi pencarian Fibonacci.';
+      formulaBox.classList.add('hidden');
+      prevStepBtn.disabled = true;
+      nextStepBtn.disabled = true;
+    }
+
+    // Event Listeners
+    searchBtn.addEventListener('click', () => {
+      stopAutoPlay();
+      startSearch();
+    });
+
+    targetInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        stopAutoPlay();
+        startSearch();
+      }
+    });
+
+    generateBtn.addEventListener('click', () => {
+      generateSortedArray(10);
+    });
+
+    prevStepBtn.addEventListener('click', () => {
+      stopAutoPlay();
+      if (currentStepIndex > 0) {
+        currentStepIndex--;
+        renderStep(currentStepIndex);
+      }
+    });
+
+    nextStepBtn.addEventListener('click', () => {
+      stopAutoPlay();
+      if (currentStepIndex < stepsHistory.length - 1) {
+        currentStepIndex++;
+        renderStep(currentStepIndex);
+      }
+    });
+
+    playBtn.addEventListener('click', toggleAutoPlay);
+    resetBtn.addEventListener('click', () => {
+      renderArrayBoxes();
+      resetSimulationState();
+    });
+
+    speedSlider.addEventListener('input', (e) => {
+      animationSpeed = 3000 - parseInt(e.target.value);
+      if (isPlaying) {
+        stopAutoPlay();
+        toggleAutoPlay();
+      }
+    });
+
+    // Inisialisasi Pertama Kali
+    window.onload = function() {
+      generateSortedArray(10);
+    };
+  </script>
+</body>
+</html>
