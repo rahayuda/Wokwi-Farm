@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Golden Ratio & Fibonacci UI Design</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
+  
+  <style>
+    :root {
+      /* Rasio Emas (Phi) */
+      --phi: 1.618;
+
+      /* Skala Spacing Berdasarkan Deret Fibonacci (px) */
+      --fib-1: 5px;
+      --fib-2: 8px;
+      --fib-3: 13px;
+      --fib-5: 21px;
+      --fib-8: 34px;
+      --fib-13: 55px;
+      --fib-21: 89px;
+
+      /* Skala Tipografi Modular (Base: 16px * 1.618) */
+      --text-sm: 0.618rem;   /* ~9.8px */
+      --text-base: 1rem;      /* 16px */
+      --text-md: 1.618rem;    /* ~25.8px */
+      --text-lg: 2.618rem;    /* ~41.8px */
+      --text-xl: 4.236rem;    /* ~67.7px */
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+
+    .font-display {
+      font-family: 'Space Grotesk', sans-serif;
+    }
+
+    /* Kelas Tipografi Golden Ratio */
+    .golden-h1 { font-size: clamp(2.2rem, 5vw, var(--text-xl)); line-height: 1.1; }
+    .golden-h2 { font-size: clamp(1.6rem, 3.5vw, var(--text-lg)); line-height: 1.2; }
+    .golden-h3 { font-size: clamp(1.2rem, 2.5vw, var(--text-md)); line-height: 1.3; }
+    .golden-caption { font-size: var(--text-sm); }
+
+    /* Visualizer Garis Spiral & Grid */
+    .spiral-path {
+      stroke-dasharray: 1000;
+      stroke-dashoffset: 1000;
+      animation: drawSpiral 2.5s ease-out forwards;
+    }
+
+    @keyframes drawSpiral {
+      to {
+        stroke-dashoffset: 0;
+      }
+    }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen relative overflow-x-hidden selection:bg-amber-400 selection:text-slate-900">
+
+  <div class="fixed inset-0 pointer-events-none -z-10">
+    <div class="absolute top-1/4 left-1/4 w-96 h-96 bg-amber-200/40 rounded-full blur-3xl"></div>
+    <div class="absolute bottom-1/3 right-1/4 w-[34rem] h-[34rem] bg-orange-100/60 rounded-full blur-3xl"></div>
+  </div>
+
+  <header class="border-b border-slate-200/80 backdrop-blur-md sticky top-0 z-40 bg-white/80">
+    <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="w-9 h-9 rounded-lg bg-gradient-to-br from-amber-500 to-amber-600 flex items-center justify-center font-display font-bold text-white text-xl shadow-md shadow-amber-500/20">
+          φ
+        </div>
+        <div>
+          <span class="font-display font-bold tracking-wide text-lg text-slate-900">Aurea UI</span>
+          <span class="hidden sm:inline-block ml-2 text-xs bg-amber-100 text-amber-800 px-2 py-0.5 rounded border border-amber-200/80 font-medium">1 : 1.618</span>
+        </div>
+      </div>
+
+      <!-- Tombol Interaktif Overlay Grid -->
+      <div class="flex items-center gap-3">
+        <button id="toggleOverlayBtn" class="px-4 py-2 text-xs md:text-sm font-semibold rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 transition-all flex items-center gap-2">
+          <svg class="w-4 h-4 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path>
+          </svg>
+          <span id="overlayBtnText">Aktifkan Garis Fibonacci</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-7xl mx-auto px-6 py-12 space-y-16">
+
+    <section class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+      
+      <!-- Kolom Kiri: 61.8% (~7.4 dari 12 Kolom -> col-span-7) -->
+      <div class="lg:col-span-7 space-y-6">
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white border border-slate-200 text-amber-700 text-xs font-semibold shadow-sm">
+          <span class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
+          Harmoni Visual Matematis
+        </div>
+
+        <h1 class="golden-h1 font-display font-extrabold text-slate-900 tracking-tight">
+          Estetika Sempurna Berbasis <span class="text-transparent bg-clip-text bg-gradient-to-r from-amber-600 via-amber-500 to-yellow-600">Rasio Emas</span>
+        </h1>
+
+        <p class="text-slate-600 text-base md:text-lg leading-relaxed max-w-xl">
+          Penerapan rasio geometris $1 : 1{,}618$ dan deret Fibonacci untuk menciptakan hierarki visual, ritme tipografi, dan tata letak yang proporsional secara alami.
+        </p>
+
+        <!-- Aksi Cepat -->
+        <div class="flex flex-wrap items-center gap-4 pt-2">
+          <a href="#fibonacci-grid" class="px-6 py-3 rounded-xl bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold transition-all shadow-lg shadow-amber-500/20">
+            Eksplorasi Grid
+          </a>
+          <a href="#typography-calc" class="px-6 py-3 rounded-xl bg-white hover:bg-slate-100 text-slate-700 font-semibold border border-slate-300 transition-all shadow-sm">
+            Kalkulator Skala
+          </a>
+        </div>
+      </div>
+
+      <!-- Kolom Kanan: 38.2% (~4.6 dari 12 Kolom -> col-span-5) -->
+      <div class="lg:col-span-5">
+        <div class="relative bg-white border border-slate-200/90 rounded-2xl p-6 shadow-xl backdrop-blur-sm">
+          <div class="flex items-center justify-between mb-4 border-b border-slate-100 pb-3">
+            <span class="text-xs font-mono font-semibold text-amber-700 uppercase tracking-wider">Visualisasi Spiral Fibonacci</span>
+            <span class="text-xs font-mono text-slate-400">φ = 1.6180339</span>
+          </div>
+
+          <!-- SVG Visualisasi Spiral Fibonacci Interaktif -->
+          <div class="w-full aspect-[1.618/1] bg-slate-50 rounded-xl relative overflow-hidden border border-slate-200 p-2 flex items-center justify-center">
+            <svg class="w-full h-full" viewBox="0 0 550 340" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <!-- Kotak-kotak Proporsi Fibonacci (34x34, 21x21, 13x13, dst) -->
+              <!-- 340x340 Square -->
+              <rect x="0" y="0" width="340" height="340" class="stroke-slate-300 fill-amber-500/5" stroke-width="1.5"/>
+              <text x="15" y="30" class="fill-slate-400 font-mono text-xs">34</text>
+              
+              <!-- 210x210 Square -->
+              <rect x="340" y="130" width="210" height="210" class="stroke-slate-300 fill-amber-500/10" stroke-width="1.5"/>
+              <text x="355" y="160" class="fill-slate-400 font-mono text-xs">21</text>
+              
+              <!-- 130x130 Square -->
+              <rect x="340" y="0" width="130" height="130" class="stroke-slate-300 fill-amber-500/15" stroke-width="1.5"/>
+              <text x="355" y="25" class="fill-slate-400 font-mono text-xs">13</text>
+              
+              <!-- 80x80 Square -->
+              <rect x="470" y="0" width="80" height="80" class="stroke-slate-300 fill-amber-500/20" stroke-width="1.5"/>
+              <text x="480" y="20" class="fill-slate-400 font-mono text-xs">8</text>
+
+              <!-- 50x50 Square -->
+              <rect x="500" y="80" width="50" height="50" class="stroke-slate-300 fill-amber-500/25" stroke-width="1.5"/>
+              
+              <!-- Garis Kurva Emas (Spiral Logaritmik) -->
+              <path class="spiral-path stroke-amber-500" stroke-width="2.5" stroke-linecap="round"
+                    d="M0,340 A340,340 0 0,1 340,0 A210,210 0 0,1 550,210 A130,130 0 0,1 420,340 A80,80 0 0,1 420,260 A50,50 0 0,1 470,210"/>
+            </svg>
+          </div>
+
+          <div class="grid grid-cols-4 gap-2 mt-4 text-center font-mono text-xs">
+            <div class="bg-slate-50 p-2 rounded-lg border border-slate-200">
+              <span class="text-slate-400 block">Rasio</span>
+              <span class="text-amber-700 font-bold">61.8% : 38.2%</span>
+            </div>
+            <div class="bg-slate-50 p-2 rounded-lg border border-slate-200">
+              <span class="text-slate-400 block">Deret</span>
+              <span class="text-slate-700 font-semibold">5, 8, 13, 21...</span>
+            </div>
+            <div class="bg-slate-50 p-2 rounded-lg border border-slate-200">
+              <span class="text-slate-400 block">Padding</span>
+              <span class="text-slate-700 font-semibold">Fibonacci</span>
+            </div>
+            <div class="bg-slate-50 p-2 rounded-lg border border-slate-200">
+              <span class="text-slate-400 block">Status</span>
+              <span class="text-emerald-600 font-bold">Harmonis</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- BENTO GRID FIBONACCI (Menggunakan pembagian proporsi 8, 5, 3, 2, 1) -->
+    <section id="fibonacci-grid" class="space-y-6">
+      <div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
+        <div>
+          <span class="text-amber-700 text-xs font-mono uppercase tracking-widest block mb-1 font-semibold">Layout Bento Dinamis</span>
+          <h2 class="golden-h2 font-display font-bold text-slate-900">Penerapan Grid Proporsional</h2>
+        </div>
+        <p class="text-slate-600 text-sm max-w-md">
+          Kartu diatur dengan rasio dimensi emas untuk menciptakan fokus pandangan mata yang alami tanpa membuat antarmuka terasa kaku.
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-12 gap-5">
+        
+        <!-- Kartu 1: Span 7 (Dominan ~ 61.8%) -->
+        <div class="md:col-span-7 bg-white border border-slate-200/90 hover:border-amber-400 shadow-sm hover:shadow-md transition-all rounded-2xl p-8 flex flex-col justify-between group">
+          <div class="space-y-4">
+            <div class="w-12 h-12 rounded-xl bg-amber-100/80 border border-amber-200 flex items-center justify-center text-amber-700">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+              </svg>
+            </div>
+            <span class="text-xs font-mono text-amber-700 uppercase font-semibold">Komponen Utama (Span 7)</span>
+            <h3 class="golden-h3 font-display font-bold text-slate-900 group-hover:text-amber-600 transition-colors">Hierarki Berbobot 61.8%</h3>
+            <p class="text-slate-600 text-sm leading-relaxed">
+              Area terbesar dialokasikan untuk konten dengan nilai prioritas tertinggi sehingga langsung menarik perhatian pengguna pertama kali.
+            </p>
+          </div>
+          <div class="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between text-xs text-slate-400 font-mono">
+            <span>Proporsi: 1.618x</span>
+            <span>Prioritas: 01</span>
+          </div>
+        </div>
+
+        <!-- Kartu 2: Span 5 (Sub-dominan ~ 38.2%) -->
+        <div class="md:col-span-5 bg-white border border-slate-200/90 hover:border-amber-400 shadow-sm hover:shadow-md transition-all rounded-2xl p-8 flex flex-col justify-between group">
+          <div class="space-y-4">
+            <div class="w-12 h-12 rounded-xl bg-orange-100/80 border border-orange-200 flex items-center justify-center text-orange-700">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+              </svg>
+            </div>
+            <span class="text-xs font-mono text-orange-700 uppercase font-semibold">Sekunder (Span 5)</span>
+            <h3 class="golden-h3 font-display font-bold text-slate-900 group-hover:text-orange-600 transition-colors">Aksen 38.2%</h3>
+            <p class="text-slate-600 text-sm leading-relaxed">
+              Mendukung konten primer dengan informasi pelengkap tanpa mengalihkan fokus utama.
+            </p>
+          </div>
+          <div class="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between text-xs text-slate-400 font-mono">
+            <span>Proporsi: 1.0x</span>
+            <span>Prioritas: 02</span>
+          </div>
+        </div>
+
+        <!-- Kartu 3: Tiga Kolom dengan Skala Pembagi Fibonacci (Span 4 + 4 + 4) -->
+        <div class="md:col-span-4 bg-white border border-slate-200/90 rounded-2xl p-6 shadow-sm hover:border-amber-300 hover:shadow-md transition-all">
+          <div class="text-amber-600 font-mono text-2xl font-bold mb-2">13px / 21px</div>
+          <h4 class="font-bold text-slate-800 mb-1">Padding Fibonacci</h4>
+          <p class="text-slate-600 text-xs leading-relaxed">
+            Menghilangkan tebak-tebakan ukuran margin dengan menggunakan angka deret murni (8, 13, 21, 34, 55).
+          </p>
+        </div>
+
+        <div class="md:col-span-4 bg-white border border-slate-200/90 rounded-2xl p-6 shadow-sm hover:border-amber-300 hover:shadow-md transition-all">
+          <div class="text-amber-600 font-mono text-2xl font-bold mb-2">1.618 Rasio</div>
+          <h4 class="font-bold text-slate-800 mb-1">Ritme Tipografi</h4>
+          <p class="text-slate-600 text-xs leading-relaxed">
+            Setiap tingkat ukuran teks dikalikan dengan phi untuk menghasilkan lompatan ukuran yang harmonis.
+          </p>
+        </div>
+
+        <div class="md:col-span-4 bg-white border border-slate-200/90 rounded-2xl p-6 shadow-sm hover:border-amber-300 hover:shadow-md transition-all">
+          <div class="text-amber-600 font-mono text-2xl font-bold mb-2">Aspect-Ratio</div>
+          <h4 class="font-bold text-slate-800 mb-1">Bingkai Gambar Emas</h4>
+          <p class="text-slate-600 text-xs leading-relaxed">
+            Elemen visual menggunakan rasio `1.618 / 1` untuk dimensi banner dan kartu yang nyaman dipandang.
+          </p>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- KALKULATOR INTERAKTIF TIPOGRAFI GOLDEN RATIO -->
+    <section id="typography-calc" class="bg-white border border-slate-200 rounded-3xl p-8 md:p-12 shadow-xl relative overflow-hidden">
+      <div class="max-w-3xl space-y-6">
+        <span class="text-amber-700 text-xs font-mono uppercase tracking-widest block font-semibold">Alat Interaktif</span>
+        <h2 class="golden-h2 font-display font-bold text-slate-900">Kalkulator Tipografi Modular φ</h2>
+        <p class="text-slate-600 text-sm md:text-base">
+          Ubah ukuran dasar (*Base Font*) untuk melihat otomatisasi perhitungan skala font berbasis Rasio Emas:
+        </p>
+
+        <!-- Input Slider -->
+        <div class="bg-slate-50 p-6 rounded-2xl border border-slate-200 space-y-4">
+          <div class="flex justify-between items-center">
+            <label for="baseFontSize" class="text-sm font-semibold text-slate-700">Base Font Size (px):</label>
+            <span id="baseValueDisplay" class="font-mono text-amber-800 font-bold text-lg bg-amber-100 px-3 py-1 rounded border border-amber-200">16 px</span>
+          </div>
+          <input type="range" id="baseFontSize" min="12" max="22" value="16" step="1" 
+                 class="w-full accent-amber-600 bg-slate-200 h-2 rounded-lg cursor-pointer">
+        </div>
+
+        <!-- Tabel Hasil Kalkulasi -->
+        <div class="space-y-3 pt-4">
+          <div class="grid grid-cols-12 text-xs font-mono text-slate-400 px-4 py-2 border-b border-slate-200">
+            <span class="col-span-3">LEVEL</span>
+            <span class="col-span-3">RUMUS</span>
+            <span class="col-span-3">UKURAN</span>
+            <span class="col-span-3 text-right">PREVIEW</span>
+          </div>
+
+          <div class="grid grid-cols-12 items-center px-4 py-3 bg-slate-50/80 rounded-xl border border-slate-200/80">
+            <span class="col-span-3 font-semibold text-slate-700 text-sm">Heading 1</span>
+            <span class="col-span-3 font-mono text-xs text-slate-400">Base × φ³</span>
+            <span id="h1Size" class="col-span-3 font-mono text-amber-700 font-bold text-sm">67.77 px</span>
+            <span class="col-span-3 text-right font-display font-bold text-slate-900 truncate text-xl">Aa</span>
+          </div>
+
+          <div class="grid grid-cols-12 items-center px-4 py-3 bg-slate-50/80 rounded-xl border border-slate-200/80">
+            <span class="col-span-3 font-semibold text-slate-700 text-sm">Heading 2</span>
+            <span class="col-span-3 font-mono text-xs text-slate-400">Base × φ²</span>
+            <span id="h2Size" class="col-span-3 font-mono text-amber-700 font-bold text-sm">41.89 px</span>
+            <span class="col-span-3 text-right font-display font-bold text-slate-900 truncate text-lg">Aa</span>
+          </div>
+
+          <div class="grid grid-cols-12 items-center px-4 py-3 bg-slate-50/80 rounded-xl border border-slate-200/80">
+            <span class="col-span-3 font-semibold text-slate-700 text-sm">Heading 3</span>
+            <span class="col-span-3 font-mono text-xs text-slate-400">Base × φ¹</span>
+            <span id="h3Size" class="col-span-3 font-mono text-amber-700 font-bold text-sm">25.89 px</span>
+            <span class="col-span-3 text-right font-display font-semibold text-slate-900 truncate text-base">Aa</span>
+          </div>
+
+          <div class="grid grid-cols-12 items-center px-4 py-3 bg-slate-50/80 rounded-xl border border-slate-200/80">
+            <span class="col-span-3 font-semibold text-slate-700 text-sm">Body (Base)</span>
+            <span class="col-span-3 font-mono text-xs text-slate-400">Base × 1</span>
+            <span id="baseSize" class="col-span-3 font-mono text-amber-700 font-bold text-sm">16.00 px</span>
+            <span class="col-span-3 text-right text-slate-700 text-sm">Aa</span>
+          </div>
+
+          <div class="grid grid-cols-12 items-center px-4 py-3 bg-slate-50/80 rounded-xl border border-slate-200/80">
+            <span class="col-span-3 font-semibold text-slate-700 text-sm">Small/Caption</span>
+            <span class="col-span-3 font-mono text-xs text-slate-400">Base ÷ φ¹</span>
+            <span id="captionSize" class="col-span-3 font-mono text-amber-700 font-bold text-sm">9.89 px</span>
+            <span class="col-span-3 text-right text-slate-500 text-xs">Aa</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="border-t border-slate-200 bg-white py-8 text-center text-xs text-slate-500 font-mono">
+    <p>Implementasi UI Golden Ratio &amp; Deret Fibonacci &bull; Dirancang dengan Proporsi $\phi = 1{,}618$</p>
+  </footer>
+
+  <!-- Interaktivitas Javascript -->
+  <script>
+    // Konstanta Rasio Emas (Phi)
+    const PHI = 1.61803398875;
+
+    // Elemen Kalkulator
+    const baseSlider = document.getElementById('baseFontSize');
+    const baseValueDisplay = document.getElementById('baseValueDisplay');
+    const h1SizeEl = document.getElementById('h1Size');
+    const h2SizeEl = document.getElementById('h2Size');
+    const h3SizeEl = document.getElementById('h3Size');
+    const baseSizeEl = document.getElementById('baseSize');
+    const captionSizeEl = document.getElementById('captionSize');
+
+    // Fungsi Kalkulasi Tipografi Modular
+    function updateTypographyScale(base) {
+      const h3 = (base * PHI).toFixed(2);
+      const h2 = (base * Math.pow(PHI, 2)).toFixed(2);
+      const h1 = (base * Math.pow(PHI, 3)).toFixed(2);
+      const caption = (base / PHI).toFixed(2);
+
+      baseValueDisplay.textContent = `${base} px`;
+      baseSizeEl.textContent = `${Number(base).toFixed(2)} px`;
+      h3SizeEl.textContent = `${h3} px`;
+      h2SizeEl.textContent = `${h2} px`;
+      h1SizeEl.textContent = `${h1} px`;
+      captionSizeEl.textContent = `${caption} px`;
+    }
+
+    baseSlider.addEventListener('input', (e) => {
+      updateTypographyScale(e.target.value);
+    });
+
+    // Toggle Overlay Garis Pandu Fibonacci
+    const toggleOverlayBtn = document.getElementById('toggleOverlayBtn');
+    const overlayBtnText = document.getElementById('overlayBtnText');
+    let overlayActive = false;
+
+    // Elemen Overlay Dinamis (Light Theme)
+    const overlayContainer = document.createElement('div');
+    overlayContainer.id = 'golden-overlay';
+    overlayContainer.className = 'fixed inset-0 pointer-events-none z-50 transition-opacity duration-300 opacity-0';
+    overlayContainer.innerHTML = `
+      <div class="h-full w-full max-w-7xl mx-auto px-6 grid grid-cols-12 gap-5">
+        <div class="col-span-7 border-x border-dashed border-amber-500/50 bg-amber-500/10 flex items-center justify-center">
+          <span class="bg-amber-600 text-white text-xs font-mono font-bold px-3 py-1 rounded shadow-sm">61.8% Area Utama</span>
+        </div>
+        <div class="col-span-5 border-x border-dashed border-orange-500/50 bg-orange-500/10 flex items-center justify-center">
+          <span class="bg-orange-600 text-white text-xs font-mono font-bold px-3 py-1 rounded shadow-sm">38.2% Area Samping</span>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(overlayContainer);
+
+    toggleOverlayBtn.addEventListener('click', () => {
+      overlayActive = !overlayActive;
+      if (overlayActive) {
+        overlayContainer.classList.remove('opacity-0');
+        overlayContainer.classList.add('opacity-100');
+        overlayBtnText.textContent = 'Sembunyikan Garis';
+        toggleOverlayBtn.classList.add('border-amber-500', 'text-amber-800', 'bg-amber-50');
+      } else {
+        overlayContainer.classList.add('opacity-0');
+        overlayContainer.classList.remove('opacity-100');
+        overlayBtnText.textContent = 'Aktifkan Garis Fibonacci';
+        toggleOverlayBtn.classList.remove('border-amber-500', 'text-amber-800', 'bg-amber-50');
+      }
+    });
+
+    // Inisialisasi awal kalkulator
+    updateTypographyScale(16);
+  </script>
+</body>
+</html>
