@@ -40,9 +40,9 @@
     }
 
     /* Kelas Tipografi Golden Ratio */
-    .golden-h1 { font-size: clamp(2.2rem, 5vw, var(--text-xl)); line-height: 1.1; }
-    .golden-h2 { font-size: clamp(1.6rem, 3.5vw, var(--text-lg)); line-height: 1.2; }
-    .golden-h3 { font-size: clamp(1.2rem, 2.5vw, var(--text-md)); line-height: 1.3; }
+    .golden-h1 { font-size: var(--text-xl); line-height: 1.1; }
+    .golden-h2 { font-size: var(--text-lg); line-height: 1.2; }
+    .golden-h3 { font-size: var(--text-md); line-height: 1.3; }
     .golden-caption { font-size: var(--text-sm); }
 
     /* Visualizer Garis Spiral & Grid */
@@ -268,7 +268,7 @@
         <span class="text-amber-700 text-xs font-mono uppercase tracking-widest block font-semibold">Alat Interaktif</span>
         <h2 class="golden-h2 font-display font-bold text-slate-900">Kalkulator Tipografi Modular φ</h2>
         <p class="text-slate-600 text-sm md:text-base">
-          Ubah ukuran dasar (*Base Font*) untuk melihat otomatisasi perhitungan skala font berbasis Rasio Emas:
+          Ubah ukuran dasar (*Base Font*) untuk melihat perhitungan skala font berbasis Rasio Emas dan perubahan ukuran teks seluruh halaman web secara *live*:
         </p>
 
         <!-- Input Slider -->
@@ -351,17 +351,28 @@
 
     // Fungsi Kalkulasi Tipografi Modular
     function updateTypographyScale(base) {
-      const h3 = (base * PHI).toFixed(2);
-      const h2 = (base * Math.pow(PHI, 2)).toFixed(2);
-      const h1 = (base * Math.pow(PHI, 3)).toFixed(2);
-      const caption = (base / PHI).toFixed(2);
+      const baseNum = parseFloat(base);
+      const h3 = (baseNum * PHI).toFixed(2);
+      const h2 = (baseNum * Math.pow(PHI, 2)).toFixed(2);
+      const h1 = (baseNum * Math.pow(PHI, 3)).toFixed(2);
+      const caption = (baseNum / PHI).toFixed(2);
 
-      baseValueDisplay.textContent = `${base} px`;
-      baseSizeEl.textContent = `${Number(base).toFixed(2)} px`;
+      baseValueDisplay.textContent = `${baseNum} px`;
+      baseSizeEl.textContent = `${baseNum.toFixed(2)} px`;
       h3SizeEl.textContent = `${h3} px`;
       h2SizeEl.textContent = `${h2} px`;
       h1SizeEl.textContent = `${h1} px`;
       captionSizeEl.textContent = `${caption} px`;
+
+      // Perbarui variabel CSS root secara langsung agar tampilan teks di seluruh halaman web berubah otomatis
+      document.documentElement.style.setProperty('--text-base', `${baseNum}px`);
+      document.documentElement.style.setProperty('--text-md', `${h3}px`);
+      document.documentElement.style.setProperty('--text-lg', `${h2}px`);
+      document.documentElement.style.setProperty('--text-xl', `${h1}px`);
+      document.documentElement.style.setProperty('--text-sm', `${caption}px`);
+
+      // Terapkan ukuran dasar ke seluruh teks paragraf halaman
+      document.body.style.fontSize = `${baseNum}px`;
     }
 
     baseSlider.addEventListener('input', (e) => {
