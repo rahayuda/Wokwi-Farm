@@ -6,44 +6,197 @@
   <title>Dashboard Monitoring IoT Realtime</title>
   <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
   <style>
-    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f4f4f9; padding: 20px; }
-    .card-container { display: flex; gap: 15px; flex-wrap: wrap; }
-    .card { 
-      background: white; 
-      padding: 20px; 
-      border-radius: 12px; 
-      box-shadow: 0 4px 10px rgba(0,0,0,0.05); 
-      min-width: 160px; 
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f4f7f9;
+      color: #333;
+      padding: 30px;
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 30px;
+    }
+
+    .header h2 {
+      font-size: 24px;
+      font-weight: 700;
+      color: #1a202c;
+    }
+
+    .status-badge {
+      font-size: 14px;
+      font-weight: 600;
+      padding: 8px 16px;
+      border-radius: 20px;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .status-badge::before {
+      content: '';
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+    }
+
+    .connected {
+      background-color: #e6f4ea;
+      color: #137333;
+    }
+    .connected::before {
+      background-color: #137333;
+    }
+
+    .disconnected {
+      background-color: #fce8e6;
+      color: #c5221f;
+    }
+    .disconnected::before {
+      background-color: #c5221f;
+    }
+
+    /* Grid container untuk menampung Card Box Utama */
+    .dashboard-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+    }
+
+    /* Main Card Box (Satu Perangkat / Topik) */
+    .device-card {
+      background: #ffffff;
+      border-radius: 16px;
+      padding: 24px;
+      width: 360px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+    }
+
+    .device-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid #edf2f7;
+    }
+
+    .device-title {
+      font-size: 18px;
+      font-weight: 700;
+      color: #007bff;
+    }
+
+    .device-tag {
+      font-size: 11px;
+      font-weight: 700;
+      color: #007bff;
+      background: #e6f0ff;
+      padding: 4px 8px;
+      border-radius: 6px;
+      letter-spacing: 0.5px;
+    }
+
+    /* Grid untuk indikator sensor di dalam Card Box */
+    .sensor-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .sensor-item {
+      background: #f8fafc;
+      border-radius: 10px;
+      padding: 16px;
       text-align: center;
+      border: 1px solid #edf2f7;
       transition: transform 0.2s, box-shadow 0.2s;
     }
-    .card.updated {
-      transform: scale(1.03);
-      box-shadow: 0 6px 15px rgba(0,123,255,0.2);
+
+    .sensor-item.updated {
+      transform: scale(1.02);
+      box-shadow: 0 4px 10px rgba(0, 123, 255, 0.15);
+      border-color: #90caf9;
     }
-    .value { font-size: 28px; font-weight: bold; color: #007bff; margin-top: 10px; }
-    #status { font-weight: bold; margin-bottom: 20px; padding: 8px 12px; display: inline-block; border-radius: 6px; }
-    .connected { background: #e6f4ea; color: #137333; }
-    .disconnected { background: #fce8e6; color: #c5221f; }
+
+    .sensor-label {
+      font-size: 11px;
+      font-weight: 700;
+      color: #718096;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 8px;
+    }
+
+    .sensor-value {
+      font-size: 20px;
+      font-weight: 700;
+      color: #1a202c;
+    }
+
+    .sensor-unit {
+      font-size: 12px;
+      font-weight: 400;
+      color: #718096;
+      margin-left: 2px;
+    }
   </style>
 </head>
 <body>
 
-  <h2>HiveMQ IoT Monitoring Dashboard</h2>
-  <div id="status" class="disconnected">Status: Terputus</div>
+  <div class="header">
+    <h2>IoT Monitoring Dashboard</h2>
+    <div id="status" class="status-badge disconnected">Status: Terputus</div>
+  </div>
 
-  <div class="card-container">
-    <div class="card" id="card-temp">Suhu<div class="value"><span id="temp">0</span> °C</div></div>
-    <div class="card" id="card-hum">Kelembapan<div class="value"><span id="hum">0</span> %</div></div>
-    <div class="card" id="card-dist">Jarak<div class="value"><span id="dist">0</span> cm</div></div>
-    <div class="card" id="card-lux">Cahaya<div class="value"><span id="lux">0</span></div></div>
+  <div class="dashboard-grid">
+    <!-- Card Box Utama (Perangkat 1) -->
+    <div class="device-card">
+      <div class="device-header">
+        <span class="device-title">sensor/data</span>
+        <span class="device-tag">DEVICE</span>
+      </div>
+
+      <div class="sensor-grid">
+        <div class="sensor-item" id="card-temp">
+          <div class="sensor-label">Suhu</div>
+          <div class="sensor-value"><span id="temp">0.00</span><span class="sensor-unit">°C</span></div>
+        </div>
+
+        <div class="sensor-item" id="card-hum">
+          <div class="sensor-label">Kelembapan</div>
+          <div class="sensor-value"><span id="hum">0.00</span><span class="sensor-unit">%</span></div>
+        </div>
+
+        <div class="sensor-item" id="card-dist">
+          <div class="sensor-label">Jarak</div>
+          <div class="sensor-value"><span id="dist">0</span><span class="sensor-unit">cm</span></div>
+        </div>
+
+        <div class="sensor-item" id="card-lux">
+          <div class="sensor-label">Cahaya</div>
+          <div class="sensor-value"><span id="lux">0</span><span class="sensor-unit">lux</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Anda bisa menambahkan Card Box baru di sini nanti -->
+
   </div>
 
   <script>
-    // Menyimpan nilai angka terakhir untuk animasi
     const currentValues = { temp: 0, hum: 0, dist: 0, lux: 0 };
 
-    // Fungsi Animasi Perubahan Angka (Count Up / Count Down)
     function animateValue(id, start, end, duration, decimals = 0) {
       if (start === end) return;
       const obj = document.getElementById(id);
@@ -56,7 +209,6 @@
       let endTime = startTime + duration;
       let timer;
 
-      // Efek highlight kartu saat ada pergerakan data
       if (card) card.classList.add('updated');
 
       function run() {
@@ -87,7 +239,7 @@
 
     client.on('connect', () => {
       statusEl.textContent = 'Status: Terhubung';
-      statusEl.className = 'status connected';
+      statusEl.className = 'status-badge connected';
       client.subscribe('sensor/data');
     });
 
@@ -95,7 +247,6 @@
       try {
         const data = JSON.parse(message.toString());
 
-        // Jalankan animasi pergerakan angka jika data tersedia
         if (data.temp !== undefined) {
           animateValue('temp', currentValues.temp, data.temp, 1000, 2);
           currentValues.temp = data.temp;
@@ -119,7 +270,7 @@
 
     client.on('close', () => {
       statusEl.textContent = 'Status: Terputus';
-      statusEl.className = 'status disconnected';
+      statusEl.className = 'status-badge disconnected';
     });
   </script>
 </body>
