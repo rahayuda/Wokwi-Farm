@@ -6,155 +6,37 @@
   <title>Dashboard Monitoring IoT Multi-Topic</title>
   <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
   <style>
-    :root {
-      --bg-color: #f4f6f9;
-      --card-bg: #ffffff;
-      --text-main: #2c3e50;
-      --text-muted: #6c757d;
-      --primary: #007bff;
-      --border-color: #e9ecef;
-    }
-
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-
-    body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: var(--bg-color);
-      color: var(--text-main);
-      padding: 24px;
-    }
-
-    .header-container {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 24px;
-      flex-wrap: wrap;
-      gap: 12px;
-    }
-
-    h2 { font-size: 24px; font-weight: 700; color: #1a252f; }
-
-    #status {
-      font-weight: 600;
-      font-size: 14px;
-      padding: 8px 16px;
-      border-radius: 20px;
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .status-dot {
-      width: 10px;
-      height: 10px;
-      border-radius: 50%;
-      display: inline-block;
-    }
-
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f4f4f9; padding: 20px; }
+    #status { font-weight: bold; margin-bottom: 20px; padding: 8px 12px; display: inline-block; border-radius: 6px; }
     .connected { background: #e6f4ea; color: #137333; }
-    .connected .status-dot { background: #137333; }
-
     .disconnected { background: #fce8e6; color: #c5221f; }
-    .disconnected .status-dot { background: #c5221f; }
-
-    .topics-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-      gap: 20px;
-    }
-
-    .topic-card {
-      background: var(--card-bg);
-      border-radius: 14px;
-      padding: 20px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-      border: 1px solid var(--border-color);
-      transition: transform 0.2s ease, box-shadow 0.2s ease;
-    }
-
-    .topic-card.updated {
-      box-shadow: 0 6px 20px rgba(0, 123, 255, 0.25);
-      border-color: rgba(0, 123, 255, 0.4);
-    }
-
-    .topic-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      border-bottom: 2px solid var(--border-color);
-      padding-bottom: 12px;
-      margin-bottom: 16px;
-    }
-
-    .topic-title {
-      font-size: 18px;
-      font-weight: 700;
-      color: #007bff;
-      word-break: break-all;
-    }
-
-    .topic-badge {
-      font-size: 11px;
-      font-weight: 600;
-      background: #eef5ff;
-      color: #007bff;
-      padding: 4px 8px;
-      border-radius: 6px;
-      text-transform: uppercase;
-    }
-
-    .sensor-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 12px;
-    }
-
-    .sensor-box {
-      background: #f8f9fa;
-      padding: 12px;
-      border-radius: 8px;
+    
+    .topic-card { background: white; border-radius: 12px; padding: 20px; margin-bottom: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+    .topic-title { font-size: 20px; font-weight: bold; margin-bottom: 15px; color: #007bff; border-bottom: 2px solid #e9ecef; padding-bottom: 8px; }
+    
+    .card-container { display: flex; gap: 15px; flex-wrap: wrap; }
+    .card { 
+      background: #f8f9fa; 
+      padding: 20px; 
+      border-radius: 12px; 
+      border: 1px solid #e9ecef;
+      min-width: 160px; 
       text-align: center;
-      border: 1px solid #f0f0f0;
-      transition: background-color 0.3s ease;
+      transition: transform 0.2s, box-shadow 0.2s;
     }
-
-    .sensor-box.flash {
-      background-color: #e8f2ff;
+    .card.updated {
+      transform: scale(1.03);
+      box-shadow: 0 6px 15px rgba(0,123,255,0.2);
     }
-
-    .sensor-label {
-      font-size: 12px;
-      color: var(--text-muted);
-      font-weight: 600;
-      text-transform: uppercase;
-      margin-bottom: 4px;
-    }
-
-    .sensor-value {
-      font-size: 22px;
-      font-weight: 700;
-      color: #2c3e50;
-    }
-
-    .sensor-unit {
-      font-size: 13px;
-      color: var(--text-muted);
-      font-weight: normal;
-    }
+    .value { font-size: 28px; font-weight: bold; color: #007bff; margin-top: 10px; }
   </style>
 </head>
 <body>
 
-  <div class="header-container">
-    <h2>IoT Monitoring Dashboard</h2>
-    <div id="status" class="disconnected">
-      <span class="status-dot"></span>
-      <span id="status-text">Status: Terputus</span>
-    </div>
-  </div>
+  <h2>HiveMQ Multi-Topic IoT Dashboard</h2>
+  <div id="status" class="disconnected">Status: Terputus</div>
 
-  <div id="topics-wrapper" class="topics-grid"></div>
+  <div id="topics-wrapper"></div>
 
   <script>
     const currentValues = {};
@@ -163,91 +45,57 @@
       return topic.replace(/[^a-zA-Z0-9_-]/g, '_');
     }
 
+    // Fungsi membuat kontainer kartu per topik jika belum ada
     function getOrCreateTopicCard(topic) {
       const safeId = escapeTopicId(topic);
-      let cardElement = document.getElementById(`topic-card-${safeId}`);
+      let topicElement = document.getElementById(`topic-${safeId}`);
 
-      if (!cardElement) {
+      if (!topicElement) {
         const wrapper = document.getElementById('topics-wrapper');
-        cardElement = document.createElement('div');
-        cardElement.id = `topic-card-${safeId}`;
-        cardElement.className = 'topic-card';
-        cardElement.innerHTML = `
-          <div class="topic-header">
-            <span class="topic-title">${topic}</span>
-            <span class="topic-badge">Device</span>
-          </div>
-          <div class="sensor-grid">
-            <div class="sensor-box" id="box-${safeId}-temp">
-              <div class="sensor-label">Suhu</div>
-              <div class="sensor-value"><span id="${safeId}-temp">0.00</span> <span class="sensor-unit">°C</span></div>
-            </div>
-            <div class="sensor-box" id="box-${safeId}-hum">
-              <div class="sensor-label">Kelembapan</div>
-              <div class="sensor-value"><span id="${safeId}-hum">0.00</span> <span class="sensor-unit">%</span></div>
-            </div>
-            <div class="sensor-box" id="box-${safeId}-dist">
-              <div class="sensor-label">Jarak</div>
-              <div class="sensor-value"><span id="${safeId}-dist">0</span> <span class="sensor-unit">cm</span></div>
-            </div>
-            <div class="sensor-box" id="box-${safeId}-lux">
-              <div class="sensor-label">Cahaya</div>
-              <div class="sensor-value"><span id="${safeId}-lux">0</span> <span class="sensor-unit">lux</span></div>
-            </div>
+        topicElement = document.createElement('div');
+        topicElement.id = `topic-${safeId}`;
+        topicElement.className = 'topic-card';
+        topicElement.innerHTML = `
+          <div class="topic-title">${topic}</div>
+          <div class="card-container">
+            <div class="card" id="card-${safeId}-temp">Suhu<div class="value"><span id="${safeId}-temp">0</span> °C</div></div>
+            <div class="card" id="card-${safeId}-hum">Kelembapan<div class="value"><span id="${safeId}-hum">0</span> %</div></div>
+            <div class="card" id="card-${safeId}-dist">Jarak<div class="value"><span id="${safeId}-dist">0</span> cm</div></div>
+            <div class="card" id="card-${safeId}-lux">Cahaya<div class="value"><span id="${safeId}-lux">0</span></div></div>
           </div>
         `;
-        wrapper.appendChild(cardElement);
-      }
-
-      // Pastikan objek penyimpanan nilai selalu terinisialisasi
-      if (!currentValues[safeId]) {
+        wrapper.appendChild(topicElement);
         currentValues[safeId] = { temp: 0, hum: 0, dist: 0, lux: 0 };
       }
-
       return safeId;
     }
 
-    // Buat kartu default untuk "sensor/data"
+    // Buat kartu default awal untuk "sensor/data"
     getOrCreateTopicCard('sensor/data');
 
-    function animateValue(safeId, sensorKey, start, end, duration, decimals = 0) {
-      const elementId = `${safeId}-${sensorKey}`;
-      const obj = document.getElementById(elementId);
-      const box = document.getElementById(`box-${safeId}-${sensorKey}`);
-      const card = document.getElementById(`topic-card-${safeId}`);
-      
-      if (!obj) return;
-
-      const numStart = parseFloat(start) || 0;
-      const numEnd = parseFloat(end) || 0;
-
-      // Update langsung jika data tidak berubah
-      if (numStart === numEnd) {
-        obj.innerHTML = numEnd.toFixed(decimals);
-        return;
-      }
-
-      const range = numEnd - numStart;
-      const minTimer = 50;
-      let stepTime = Math.max(Math.abs(Math.floor(duration / Math.abs(range))), minTimer);
+    // Fungsi Animasi (Diambil presisi dari kode hive_2.html)
+    function animateValue(id, start, end, duration, decimals = 0) {
+      if (start === end) return;
+      const obj = document.getElementById(id);
+      const card = document.getElementById('card-' + id);
+      const range = end - start;
+      let minTimer = 50;
+      let stepTime = Math.abs(Math.floor(duration / range));
+      stepTime = Math.max(stepTime, minTimer);
       let startTime = new Date().getTime();
       let endTime = startTime + duration;
       let timer;
 
       if (card) card.classList.add('updated');
-      if (box) box.classList.add('flash');
 
       function run() {
         let now = new Date().getTime();
         let remaining = Math.max((endTime - now) / duration, 0);
-        let value = numEnd - (remaining * range);
-        obj.innerHTML = value.toFixed(decimals);
-        
-        if (remaining === 0) {
+        let value = end - (remaining * range);
+        if (obj) obj.innerHTML = value.toFixed(decimals);
+        if (value == end) {
           clearInterval(timer);
-          obj.innerHTML = numEnd.toFixed(decimals);
           if (card) setTimeout(() => card.classList.remove('updated'), 300);
-          if (box) setTimeout(() => box.classList.remove('flash'), 300);
         }
       }
 
@@ -264,13 +112,13 @@
 
     const host = 'wss://f0a6886bea0d4650be2e2293bcb31c66.s1.eu.hivemq.cloud:8884/mqtt';
     const client = mqtt.connect(host, options);
-
     const statusEl = document.getElementById('status');
-    const statusText = document.getElementById('status-text');
 
     client.on('connect', () => {
-      statusText.textContent = 'Status: Terhubung';
-      statusEl.className = 'connected';
+      statusEl.textContent = 'Status: Terhubung';
+      statusEl.className = 'status connected';
+      
+      // Subscribe ke sensor/data dan semua pot (pot-+/data)
       client.subscribe(['sensor/data', 'pot-+/data']);
     });
 
@@ -280,19 +128,19 @@
         const data = JSON.parse(message.toString());
 
         if (data.temp !== undefined) {
-          animateValue(safeId, 'temp', currentValues[safeId].temp, data.temp, 800, 2);
+          animateValue(`${safeId}-temp`, currentValues[safeId].temp, data.temp, 1000, 2);
           currentValues[safeId].temp = data.temp;
         }
         if (data.hum !== undefined) {
-          animateValue(safeId, 'hum', currentValues[safeId].hum, data.hum, 800, 2);
+          animateValue(`${safeId}-hum`, currentValues[safeId].hum, data.hum, 1000, 2);
           currentValues[safeId].hum = data.hum;
         }
         if (data.dist !== undefined) {
-          animateValue(safeId, 'dist', currentValues[safeId].dist, data.dist, 800, 0);
+          animateValue(`${safeId}-dist`, currentValues[safeId].dist, data.dist, 1000, 0);
           currentValues[safeId].dist = data.dist;
         }
         if (data.lux !== undefined) {
-          animateValue(safeId, 'lux', currentValues[safeId].lux, data.lux, 800, 0);
+          animateValue(`${safeId}-lux`, currentValues[safeId].lux, data.lux, 1000, 0);
           currentValues[safeId].lux = data.lux;
         }
       } catch (e) {
@@ -301,8 +149,8 @@
     });
 
     client.on('close', () => {
-      statusText.textContent = 'Status: Terputus';
-      statusEl.className = 'disconnected';
+      statusEl.textContent = 'Status: Terputus';
+      statusEl.className = 'status disconnected';
     });
   </script>
 </body>
