@@ -58,14 +58,12 @@
     .disconnected { background: #fce8e6; color: #c5221f; }
     .disconnected .status-dot { background: #c5221f; }
 
-    /* Layout Grid Kartu Per Topik */
     .topics-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
       gap: 20px;
     }
 
-    /* Container Kartu Topik */
     .topic-card {
       background: var(--card-bg);
       border-radius: 14px;
@@ -106,7 +104,6 @@
       text-transform: uppercase;
     }
 
-    /* Sub-grid Nilai Sensor */
     .sensor-grid {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
@@ -162,12 +159,10 @@
   <script>
     const currentValues = {};
 
-    // Helper untuk mengubah nama topik menjadi ID HTML yang valid
     function escapeTopicId(topic) {
       return topic.replace(/[^a-zA-Z0-9_-]/g, '_');
     }
 
-    // Fungsi membuat/mengambil kartu per topik
     function getOrCreateTopicCard(topic) {
       const safeId = escapeTopicId(topic);
       let cardElement = document.getElementById(`topic-card-${safeId}`);
@@ -202,54 +197,63 @@
           </div>
         `;
         wrapper.appendChild(cardElement);
+      }
+
+      // Pastikan objek penyimpanan nilai selalu terinisialisasi
+      if (!currentValues[safeId]) {
         currentValues[safeId] = { temp: 0, hum: 0, dist: 0, lux: 0 };
       }
+
       return safeId;
     }
 
-    // Buat kartu default untuk "sensor/data" secara langsung saat halaman pertama kali dimuat
+    // Buat kartu default untuk "sensor/data"
     getOrCreateTopicCard('sensor/data');
 
-// Fungsi Animasi Perubahan Angka (Perbaikan Bug ID Element)
-function animateValue(safeId, sensorKey, start, end, duration, decimals = 0) {
-  const elementId = `${safeId}-${sensorKey}`;
-  const obj = document.getElementById(elementId);
-  const box = document.getElementById(`box-${safeId}-${sensorKey}`);
-  const card = document.getElementById(`topic-card-${safeId}`);
-  
-  if (!obj) return;
+    function animateValue(safeId, sensorKey, start, end, duration, decimals = 0) {
+      const elementId = `${safeId}-${sensorKey}`;
+      const obj = document.getElementById(elementId);
+      const box = document.getElementById(`box-${safeId}-${sensorKey}`);
+      const card = document.getElementById(`topic-card-${safeId}`);
+      
+      if (!obj) return;
 
-  // Jika nilai sama atau data pertama masuk (start = 0), langsung tampilkan angka
-  if (start === end) {
-    obj.innerHTML = parseFloat(end).toFixed(decimals);
-    return;
-  }
+      const numStart = parseFloat(start) || 0;
+      const numEnd = parseFloat(end) || 0;
 
-  const range = end - start;
-  const minTimer = 50;
-  let stepTime = Math.max(Math.abs(Math.floor(duration / range)), minTimer);
-  let startTime = new Date().getTime();
-  let endTime = startTime + duration;
-  let timer;
+      // Update langsung jika data tidak berubah
+      if (numStart === numEnd) {
+        obj.innerHTML = numEnd.toFixed(decimals);
+        return;
+      }
 
-  if (card) card.classList.add('updated');
-  if (box) box.classList.add('flash');
+      const range = numEnd - numStart;
+      const minTimer = 50;
+      let stepTime = Math.max(Math.abs(Math.floor(duration / Math.abs(range))), minTimer);
+      let startTime = new Date().getTime();
+      let endTime = startTime + duration;
+      let timer;
 
-  function run() {
-    let now = new Date().getTime();
-    let remaining = Math.max((endTime - now) / duration, 0);
-    let value = end - (remaining * range);
-    obj.innerHTML = value.toFixed(decimals);
-    if (value == end) {
-      clearInterval(timer);
-      if (card) setTimeout(() => card.classList.remove('updated'), 300);
-      if (box) setTimeout(() => box.classList.remove('flash'), 300);
+      if (card) card.classList.add('updated');
+      if (box) box.classList.add('flash');
+
+      function run() {
+        let now = new Date().getTime();
+        let remaining = Math.max((endTime - now) / duration, 0);
+        let value = numEnd - (remaining * range);
+        obj.innerHTML = value.toFixed(decimals);
+        
+        if (remaining === 0) {
+          clearInterval(timer);
+          obj.innerHTML = numEnd.toFixed(decimals);
+          if (card) setTimeout(() => card.classList.remove('updated'), 300);
+          if (box) setTimeout(() => box.classList.remove('flash'), 300);
+        }
+      }
+
+      timer = setInterval(run, stepTime);
+      run();
     }
-  }
-
-  timer = setInterval(run, stepTime);
-  run();
-}
 
     const options = {
       connectTimeout: 4000,
@@ -267,8 +271,6 @@ function animateValue(safeId, sensorKey, start, end, duration, decimals = 0) {
     client.on('connect', () => {
       statusText.textContent = 'Status: Terhubung';
       statusEl.className = 'connected';
-      
-      // Subscribe ke topik default 'sensor/data' dan topik multi-pot 'pot-+/data'
       client.subscribe(['sensor/data', 'pot-+/data']);
     });
 
