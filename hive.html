@@ -3,76 +3,228 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dashboard Monitoring IoT Multi-Pot</title>
+  <title>Dashboard Monitoring IoT Multi-Topic</title>
   <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
   <style>
-    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f4f4f9; padding: 20px; }
-    #status { font-weight: bold; margin-bottom: 20px; padding: 8px 12px; display: inline-block; border-radius: 6px; }
-    .connected { background: #e6f4ea; color: #137333; }
-    .disconnected { background: #fce8e6; color: #c5221f; }
-    
-    .pot-section { background: white; border-radius: 12px; padding: 15px 20px; margin-bottom: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
-    .pot-title { font-size: 20px; font-weight: bold; margin-bottom: 15px; text-transform: uppercase; color: #333; }
-    .card-container { display: flex; gap: 15px; flex-wrap: wrap; }
-    .card { 
-      background: #f8f9fa; 
-      padding: 15px; 
-      border-radius: 8px; 
-      min-width: 140px; 
-      text-align: center;
-      transition: transform 0.2s, box-shadow 0.2s;
-      border: 1px solid #e9ecef;
+    :root {
+      --bg-color: #f4f6f9;
+      --card-bg: #ffffff;
+      --text-main: #2c3e50;
+      --text-muted: #6c757d;
+      --primary: #007bff;
+      --border-color: #e9ecef;
     }
-    .card.updated { transform: scale(1.03); box-shadow: 0 6px 15px rgba(0,123,255,0.2); }
-    .value { font-size: 24px; font-weight: bold; color: #007bff; margin-top: 5px; }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: var(--bg-color);
+      color: var(--text-main);
+      padding: 24px;
+    }
+
+    .header-container {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    h2 { font-size: 24px; font-weight: 700; color: #1a252f; }
+
+    #status {
+      font-weight: 600;
+      font-size: 14px;
+      padding: 8px 16px;
+      border-radius: 20px;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .status-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      display: inline-block;
+    }
+
+    .connected { background: #e6f4ea; color: #137333; }
+    .connected .status-dot { background: #137333; }
+
+    .disconnected { background: #fce8e6; color: #c5221f; }
+    .disconnected .status-dot { background: #c5221f; }
+
+    /* Layout Grid Kartu Per Topik */
+    .topics-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 20px;
+    }
+
+    /* Container Kartu Topik */
+    .topic-card {
+      background: var(--card-bg);
+      border-radius: 14px;
+      padding: 20px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+      border: 1px solid var(--border-color);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .topic-card.updated {
+      box-shadow: 0 6px 20px rgba(0, 123, 255, 0.25);
+      border-color: rgba(0, 123, 255, 0.4);
+    }
+
+    .topic-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 2px solid var(--border-color);
+      padding-bottom: 12px;
+      margin-bottom: 16px;
+    }
+
+    .topic-title {
+      font-size: 18px;
+      font-weight: 700;
+      color: #007bff;
+      word-break: break-all;
+    }
+
+    .topic-badge {
+      font-size: 11px;
+      font-weight: 600;
+      background: #eef5ff;
+      color: #007bff;
+      padding: 4px 8px;
+      border-radius: 6px;
+      text-transform: uppercase;
+    }
+
+    /* Sub-grid Nilai Sensor */
+    .sensor-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+    }
+
+    .sensor-box {
+      background: #f8f9fa;
+      padding: 12px;
+      border-radius: 8px;
+      text-align: center;
+      border: 1px solid #f0f0f0;
+      transition: background-color 0.3s ease;
+    }
+
+    .sensor-box.flash {
+      background-color: #e8f2ff;
+    }
+
+    .sensor-label {
+      font-size: 12px;
+      color: var(--text-muted);
+      font-weight: 600;
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+
+    .sensor-value {
+      font-size: 22px;
+      font-weight: 700;
+      color: #2c3e50;
+    }
+
+    .sensor-unit {
+      font-size: 13px;
+      color: var(--text-muted);
+      font-weight: normal;
+    }
   </style>
 </head>
 <body>
 
-  <h2>HiveMQ Multi-Pot Monitoring Dashboard</h2>
-  <div id="status" class="disconnected">Status: Terputus</div>
+  <div class="header-container">
+    <h2>IoT Monitoring Dashboard</h2>
+    <div id="status" class="disconnected">
+      <span class="status-dot"></span>
+      <span id="status-text">Status: Terputus</span>
+    </div>
+  </div>
 
-  <div id="pots-wrapper"></div>
+  <div id="topics-wrapper" class="topics-grid"></div>
 
   <script>
     const currentValues = {};
 
-    function getOrCreatePotSection(potId) {
-      let potElement = document.getElementById(`pot-${potId}`);
-      if (!potElement) {
-        const wrapper = document.getElementById('pots-wrapper');
-        potElement = document.createElement('div');
-        potElement.id = `pot-${potId}`;
-        potElement.className = 'pot-section';
-        potElement.innerHTML = `
-          <div class="pot-title">${potId}</div>
-          <div class="card-container">
-            <div class="card" id="card-${potId}-temp">Suhu<div class="value"><span id="${potId}-temp">0</span> °C</div></div>
-            <div class="card" id="card-${potId}-hum">Kelembapan<div class="value"><span id="${potId}-hum">0</span> %</div></div>
-            <div class="card" id="card-${potId}-dist">Jarak<div class="value"><span id="${potId}-dist">0</span> cm</div></div>
-            <div class="card" id="card-${potId}-lux">Cahaya<div class="value"><span id="${potId}-lux">0</span></div></div>
-          </div>
-        `;
-        wrapper.appendChild(potElement);
-        currentValues[potId] = { temp: 0, hum: 0, dist: 0, lux: 0 };
-      }
-      return potElement;
+    // Helper untuk mengubah nama topik menjadi ID HTML yang valid
+    function escapeTopicId(topic) {
+      return topic.replace(/[^a-zA-Z0-9_-]/g, '_');
     }
 
-    function animateValue(id, start, end, duration, decimals = 0) {
+    // Fungsi membuat/mengambil kartu per topik
+    function getOrCreateTopicCard(topic) {
+      const safeId = escapeTopicId(topic);
+      let cardElement = document.getElementById(`topic-card-${safeId}`);
+
+      if (!cardElement) {
+        const wrapper = document.getElementById('topics-wrapper');
+        cardElement = document.createElement('div');
+        cardElement.id = `topic-card-${safeId}`;
+        cardElement.className = 'topic-card';
+        cardElement.innerHTML = `
+          <div class="topic-header">
+            <span class="topic-title">${topic}</span>
+            <span class="topic-badge">Device</span>
+          </div>
+          <div class="sensor-grid">
+            <div class="sensor-box" id="box-${safeId}-temp">
+              <div class="sensor-label">Suhu</div>
+              <div class="sensor-value"><span id="${safeId}-temp">0.00</span> <span class="sensor-unit">°C</span></div>
+            </div>
+            <div class="sensor-box" id="box-${safeId}-hum">
+              <div class="sensor-label">Kelembapan</div>
+              <div class="sensor-value"><span id="${safeId}-hum">0.00</span> <span class="sensor-unit">%</span></div>
+            </div>
+            <div class="sensor-box" id="box-${safeId}-dist">
+              <div class="sensor-label">Jarak</div>
+              <div class="sensor-value"><span id="${safeId}-dist">0</span> <span class="sensor-unit">cm</span></div>
+            </div>
+            <div class="sensor-box" id="box-${safeId}-lux">
+              <div class="sensor-label">Cahaya</div>
+              <div class="sensor-value"><span id="${safeId}-lux">0</span> <span class="sensor-unit">lux</span></div>
+            </div>
+          </div>
+        `;
+        wrapper.appendChild(cardElement);
+        currentValues[safeId] = { temp: 0, hum: 0, dist: 0, lux: 0 };
+      }
+      return safeId;
+    }
+
+    // Fungsi Animasi Perubahan Angka
+    function animateValue(safeId, sensorKey, start, end, duration, decimals = 0) {
       if (start === end) return;
-      const obj = document.getElementById(id);
-      const card = document.getElementById('card-' + id);
+      const elementId = `${safeId}-${sensorKey}`;
+      const obj = document.getElementById(elementId);
+      const box = document.getElementById(`box-${elementId}`);
+      const card = document.getElementById(`topic-card-${safeId}`);
       if (!obj) return;
 
       const range = end - start;
-      let minTimer = 50;
+      const minTimer = 50;
       let stepTime = Math.max(Math.abs(Math.floor(duration / range)), minTimer);
       let startTime = new Date().getTime();
       let endTime = startTime + duration;
       let timer;
 
       if (card) card.classList.add('updated');
+      if (box) box.classList.add('flash');
 
       function run() {
         let now = new Date().getTime();
@@ -82,6 +234,7 @@
         if (value == end) {
           clearInterval(timer);
           if (card) setTimeout(() => card.classList.remove('updated'), 300);
+          if (box) setTimeout(() => box.classList.remove('flash'), 300);
         }
       }
 
@@ -98,38 +251,38 @@
 
     const host = 'wss://f0a6886bea0d4650be2e2293bcb31c66.s1.eu.hivemq.cloud:8884/mqtt';
     const client = mqtt.connect(host, options);
+
     const statusEl = document.getElementById('status');
+    const statusText = document.getElementById('status-text');
 
     client.on('connect', () => {
-      statusEl.textContent = 'Status: Terhubung';
+      statusText.textContent = 'Status: Terhubung';
       statusEl.className = 'connected';
-      // Wildcard '+' untuk mendengarkan topik semua pot (pot-1/data, pot-2/data, dst.)
-      client.subscribe('pot-+/data');
+      
+      // Subscribe ke topik default 'sensor/data' dan topik multi-pot 'pot-+/data'
+      client.subscribe(['sensor/data', 'pot-+/data']);
     });
 
     client.on('message', (topic, message) => {
       try {
-        // Mengambil ID pot dari topik (misal: "pot-1/data" -> "pot-1")
-        const potId = topic.split('/')[0];
-        getOrCreatePotSection(potId);
-
+        const safeId = getOrCreateTopicCard(topic);
         const data = JSON.parse(message.toString());
 
         if (data.temp !== undefined) {
-          animateValue(`${potId}-temp`, currentValues[potId].temp, data.temp, 1000, 2);
-          currentValues[potId].temp = data.temp;
+          animateValue(safeId, 'temp', currentValues[safeId].temp, data.temp, 800, 2);
+          currentValues[safeId].temp = data.temp;
         }
         if (data.hum !== undefined) {
-          animateValue(`${potId}-hum`, currentValues[potId].hum, data.hum, 1000, 2);
-          currentValues[potId].hum = data.hum;
+          animateValue(safeId, 'hum', currentValues[safeId].hum, data.hum, 800, 2);
+          currentValues[safeId].hum = data.hum;
         }
         if (data.dist !== undefined) {
-          animateValue(`${potId}-dist`, currentValues[potId].dist, data.dist, 1000, 0);
-          currentValues[potId].dist = data.dist;
+          animateValue(safeId, 'dist', currentValues[safeId].dist, data.dist, 800, 0);
+          currentValues[safeId].dist = data.dist;
         }
         if (data.lux !== undefined) {
-          animateValue(`${potId}-lux`, currentValues[potId].lux, data.lux, 1000, 0);
-          currentValues[potId].lux = data.lux;
+          animateValue(safeId, 'lux', currentValues[safeId].lux, data.lux, 800, 0);
+          currentValues[safeId].lux = data.lux;
         }
       } catch (e) {
         console.error('Gagal parse JSON:', e);
@@ -137,7 +290,7 @@
     });
 
     client.on('close', () => {
-      statusEl.textContent = 'Status: Terputus';
+      statusText.textContent = 'Status: Terputus';
       statusEl.className = 'disconnected';
     });
   </script>
