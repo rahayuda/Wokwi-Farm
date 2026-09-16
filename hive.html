@@ -210,40 +210,46 @@
     // Buat kartu default untuk "sensor/data" secara langsung saat halaman pertama kali dimuat
     getOrCreateTopicCard('sensor/data');
 
-    // Fungsi Animasi Perubahan Angka
-    function animateValue(safeId, sensorKey, start, end, duration, decimals = 0) {
-      if (start === end) return;
-      const elementId = `${safeId}-${sensorKey}`;
-      const obj = document.getElementById(elementId);
-      const box = document.getElementById(`box-${elementId}`);
-      const card = document.getElementById(`topic-card-${safeId}`);
-      if (!obj) return;
+// Fungsi Animasi Perubahan Angka (Perbaikan Bug ID Element)
+function animateValue(safeId, sensorKey, start, end, duration, decimals = 0) {
+  const elementId = `${safeId}-${sensorKey}`;
+  const obj = document.getElementById(elementId);
+  const box = document.getElementById(`box-${safeId}-${sensorKey}`);
+  const card = document.getElementById(`topic-card-${safeId}`);
+  
+  if (!obj) return;
 
-      const range = end - start;
-      const minTimer = 50;
-      let stepTime = Math.max(Math.abs(Math.floor(duration / range)), minTimer);
-      let startTime = new Date().getTime();
-      let endTime = startTime + duration;
-      let timer;
+  // Jika nilai sama atau data pertama masuk (start = 0), langsung tampilkan angka
+  if (start === end) {
+    obj.innerHTML = parseFloat(end).toFixed(decimals);
+    return;
+  }
 
-      if (card) card.classList.add('updated');
-      if (box) box.classList.add('flash');
+  const range = end - start;
+  const minTimer = 50;
+  let stepTime = Math.max(Math.abs(Math.floor(duration / range)), minTimer);
+  let startTime = new Date().getTime();
+  let endTime = startTime + duration;
+  let timer;
 
-      function run() {
-        let now = new Date().getTime();
-        let remaining = Math.max((endTime - now) / duration, 0);
-        let value = end - (remaining * range);
-        obj.innerHTML = value.toFixed(decimals);
-        if (value == end) {
-          clearInterval(timer);
-          if (card) setTimeout(() => card.classList.remove('updated'), 300);
-          if (box) setTimeout(() => box.classList.remove('flash'), 300);
-        }
-      }
+  if (card) card.classList.add('updated');
+  if (box) box.classList.add('flash');
 
-      timer = setInterval(run, stepTime);
-      run();
+  function run() {
+    let now = new Date().getTime();
+    let remaining = Math.max((endTime - now) / duration, 0);
+    let value = end - (remaining * range);
+    obj.innerHTML = value.toFixed(decimals);
+    if (value == end) {
+      clearInterval(timer);
+      if (card) setTimeout(() => card.classList.remove('updated'), 300);
+      if (box) setTimeout(() => box.classList.remove('flash'), 300);
     }
+  }
+
+  timer = setInterval(run, stepTime);
+  run();
+}
 
     const options = {
       connectTimeout: 4000,
