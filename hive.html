@@ -3,23 +3,16 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dashboard Monitoring IoT Multi-Topic</title>
+  <title>Dashboard Monitoring IoT Realtime</title>
   <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
   <style>
     body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f4f4f9; padding: 20px; }
-    #status { font-weight: bold; margin-bottom: 20px; padding: 8px 12px; display: inline-block; border-radius: 6px; }
-    .connected { background: #e6f4ea; color: #137333; }
-    .disconnected { background: #fce8e6; color: #c5221f; }
-    
-    .topic-card { background: white; border-radius: 12px; padding: 20px; margin-bottom: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
-    .topic-title { font-size: 20px; font-weight: bold; margin-bottom: 15px; color: #007bff; border-bottom: 2px solid #e9ecef; padding-bottom: 8px; }
-    
     .card-container { display: flex; gap: 15px; flex-wrap: wrap; }
     .card { 
-      background: #f8f9fa; 
+      background: white; 
       padding: 20px; 
       border-radius: 12px; 
-      border: 1px solid #e9ecef;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.05); 
       min-width: 160px; 
       text-align: center;
       transition: transform 0.2s, box-shadow 0.2s;
@@ -29,51 +22,28 @@
       box-shadow: 0 6px 15px rgba(0,123,255,0.2);
     }
     .value { font-size: 28px; font-weight: bold; color: #007bff; margin-top: 10px; }
+    #status { font-weight: bold; margin-bottom: 20px; padding: 8px 12px; display: inline-block; border-radius: 6px; }
+    .connected { background: #e6f4ea; color: #137333; }
+    .disconnected { background: #fce8e6; color: #c5221f; }
   </style>
 </head>
 <body>
 
-  <h2>HiveMQ Multi-Topic IoT Dashboard</h2>
+  <h2>HiveMQ IoT Monitoring Dashboard</h2>
   <div id="status" class="disconnected">Status: Terputus</div>
 
-  <div id="topics-wrapper"></div>
+  <div class="card-container">
+    <div class="card" id="card-temp">Suhu<div class="value"><span id="temp">0</span> °C</div></div>
+    <div class="card" id="card-hum">Kelembapan<div class="value"><span id="hum">0</span> %</div></div>
+    <div class="card" id="card-dist">Jarak<div class="value"><span id="dist">0</span> cm</div></div>
+    <div class="card" id="card-lux">Cahaya<div class="value"><span id="lux">0</span></div></div>
+  </div>
 
   <script>
-    const currentValues = {};
+    // Menyimpan nilai angka terakhir untuk animasi
+    const currentValues = { temp: 0, hum: 0, dist: 0, lux: 0 };
 
-    function escapeTopicId(topic) {
-      return topic.replace(/[^a-zA-Z0-9_-]/g, '_');
-    }
-
-    // Fungsi membuat kontainer kartu per topik jika belum ada
-    function getOrCreateTopicCard(topic) {
-      const safeId = escapeTopicId(topic);
-      let topicElement = document.getElementById(`topic-${safeId}`);
-
-      if (!topicElement) {
-        const wrapper = document.getElementById('topics-wrapper');
-        topicElement = document.createElement('div');
-        topicElement.id = `topic-${safeId}`;
-        topicElement.className = 'topic-card';
-        topicElement.innerHTML = `
-          <div class="topic-title">${topic}</div>
-          <div class="card-container">
-            <div class="card" id="card-${safeId}-temp">Suhu<div class="value"><span id="${safeId}-temp">0</span> °C</div></div>
-            <div class="card" id="card-${safeId}-hum">Kelembapan<div class="value"><span id="${safeId}-hum">0</span> %</div></div>
-            <div class="card" id="card-${safeId}-dist">Jarak<div class="value"><span id="${safeId}-dist">0</span> cm</div></div>
-            <div class="card" id="card-${safeId}-lux">Cahaya<div class="value"><span id="${safeId}-lux">0</span></div></div>
-          </div>
-        `;
-        wrapper.appendChild(topicElement);
-        currentValues[safeId] = { temp: 0, hum: 0, dist: 0, lux: 0 };
-      }
-      return safeId;
-    }
-
-    // Buat kartu default awal untuk "sensor/data"
-    getOrCreateTopicCard('sensor/data');
-
-    // Fungsi Animasi (Diambil presisi dari kode hive_2.html)
+    // Fungsi Animasi Perubahan Angka (Count Up / Count Down)
     function animateValue(id, start, end, duration, decimals = 0) {
       if (start === end) return;
       const obj = document.getElementById(id);
@@ -86,13 +56,14 @@
       let endTime = startTime + duration;
       let timer;
 
+      // Efek highlight kartu saat ada pergerakan data
       if (card) card.classList.add('updated');
 
       function run() {
         let now = new Date().getTime();
         let remaining = Math.max((endTime - now) / duration, 0);
         let value = end - (remaining * range);
-        if (obj) obj.innerHTML = value.toFixed(decimals);
+        obj.innerHTML = value.toFixed(decimals);
         if (value == end) {
           clearInterval(timer);
           if (card) setTimeout(() => card.classList.remove('updated'), 300);
@@ -117,31 +88,29 @@
     client.on('connect', () => {
       statusEl.textContent = 'Status: Terhubung';
       statusEl.className = 'status connected';
-      
-      // Subscribe ke sensor/data dan semua pot (pot-+/data)
-      client.subscribe(['sensor/data', 'pot-+/data']);
+      client.subscribe('sensor/data');
     });
 
     client.on('message', (topic, message) => {
       try {
-        const safeId = getOrCreateTopicCard(topic);
         const data = JSON.parse(message.toString());
 
+        // Jalankan animasi pergerakan angka jika data tersedia
         if (data.temp !== undefined) {
-          animateValue(`${safeId}-temp`, currentValues[safeId].temp, data.temp, 1000, 2);
-          currentValues[safeId].temp = data.temp;
+          animateValue('temp', currentValues.temp, data.temp, 1000, 2);
+          currentValues.temp = data.temp;
         }
         if (data.hum !== undefined) {
-          animateValue(`${safeId}-hum`, currentValues[safeId].hum, data.hum, 1000, 2);
-          currentValues[safeId].hum = data.hum;
+          animateValue('hum', currentValues.hum, data.hum, 1000, 2);
+          currentValues.hum = data.hum;
         }
         if (data.dist !== undefined) {
-          animateValue(`${safeId}-dist`, currentValues[safeId].dist, data.dist, 1000, 0);
-          currentValues[safeId].dist = data.dist;
+          animateValue('dist', currentValues.dist, data.dist, 1000, 0);
+          currentValues.dist = data.dist;
         }
         if (data.lux !== undefined) {
-          animateValue(`${safeId}-lux`, currentValues[safeId].lux, data.lux, 1000, 0);
-          currentValues[safeId].lux = data.lux;
+          animateValue('lux', currentValues.lux, data.lux, 1000, 0);
+          currentValues.lux = data.lux;
         }
       } catch (e) {
         console.error('Gagal parse JSON:', e);
