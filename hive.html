@@ -3,60 +3,75 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dashboard Monitoring IoT Realtime</title>
+  <title>Dashboard Monitoring IoT Multi-Pot</title>
   <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
   <style>
     body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f4f4f9; padding: 20px; }
-    .card-container { display: flex; gap: 15px; flex-wrap: wrap; }
-    .card { 
-      background: white; 
-      padding: 20px; 
-      border-radius: 12px; 
-      box-shadow: 0 4px 10px rgba(0,0,0,0.05); 
-      min-width: 160px; 
-      text-align: center;
-      transition: transform 0.2s, box-shadow 0.2s;
-    }
-    .card.updated {
-      transform: scale(1.03);
-      box-shadow: 0 6px 15px rgba(0,123,255,0.2);
-    }
-    .value { font-size: 28px; font-weight: bold; color: #007bff; margin-top: 10px; }
     #status { font-weight: bold; margin-bottom: 20px; padding: 8px 12px; display: inline-block; border-radius: 6px; }
     .connected { background: #e6f4ea; color: #137333; }
     .disconnected { background: #fce8e6; color: #c5221f; }
+    
+    .pot-section { background: white; border-radius: 12px; padding: 15px 20px; margin-bottom: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+    .pot-title { font-size: 20px; font-weight: bold; margin-bottom: 15px; text-transform: uppercase; color: #333; }
+    .card-container { display: flex; gap: 15px; flex-wrap: wrap; }
+    .card { 
+      background: #f8f9fa; 
+      padding: 15px; 
+      border-radius: 8px; 
+      min-width: 140px; 
+      text-align: center;
+      transition: transform 0.2s, box-shadow 0.2s;
+      border: 1px solid #e9ecef;
+    }
+    .card.updated { transform: scale(1.03); box-shadow: 0 6px 15px rgba(0,123,255,0.2); }
+    .value { font-size: 24px; font-weight: bold; color: #007bff; margin-top: 5px; }
   </style>
 </head>
 <body>
 
-  <h2>HiveMQ IoT Monitoring Dashboard</h2>
+  <h2>HiveMQ Multi-Pot Monitoring Dashboard</h2>
   <div id="status" class="disconnected">Status: Terputus</div>
 
-  <div class="card-container">
-    <div class="card" id="card-temp">Suhu<div class="value"><span id="temp">0</span> °C</div></div>
-    <div class="card" id="card-hum">Kelembapan<div class="value"><span id="hum">0</span> %</div></div>
-    <div class="card" id="card-dist">Jarak<div class="value"><span id="dist">0</span> cm</div></div>
-    <div class="card" id="card-lux">Cahaya<div class="value"><span id="lux">0</span></div></div>
-  </div>
+  <div id="pots-wrapper"></div>
 
   <script>
-    // Menyimpan nilai angka terakhir untuk animasi
-    const currentValues = { temp: 0, hum: 0, dist: 0, lux: 0 };
+    const currentValues = {};
 
-    // Fungsi Animasi Perubahan Angka (Count Up / Count Down)
+    function getOrCreatePotSection(potId) {
+      let potElement = document.getElementById(`pot-${potId}`);
+      if (!potElement) {
+        const wrapper = document.getElementById('pots-wrapper');
+        potElement = document.createElement('div');
+        potElement.id = `pot-${potId}`;
+        potElement.className = 'pot-section';
+        potElement.innerHTML = `
+          <div class="pot-title">${potId}</div>
+          <div class="card-container">
+            <div class="card" id="card-${potId}-temp">Suhu<div class="value"><span id="${potId}-temp">0</span> °C</div></div>
+            <div class="card" id="card-${potId}-hum">Kelembapan<div class="value"><span id="${potId}-hum">0</span> %</div></div>
+            <div class="card" id="card-${potId}-dist">Jarak<div class="value"><span id="${potId}-dist">0</span> cm</div></div>
+            <div class="card" id="card-${potId}-lux">Cahaya<div class="value"><span id="${potId}-lux">0</span></div></div>
+          </div>
+        `;
+        wrapper.appendChild(potElement);
+        currentValues[potId] = { temp: 0, hum: 0, dist: 0, lux: 0 };
+      }
+      return potElement;
+    }
+
     function animateValue(id, start, end, duration, decimals = 0) {
       if (start === end) return;
       const obj = document.getElementById(id);
       const card = document.getElementById('card-' + id);
+      if (!obj) return;
+
       const range = end - start;
       let minTimer = 50;
-      let stepTime = Math.abs(Math.floor(duration / range));
-      stepTime = Math.max(stepTime, minTimer);
+      let stepTime = Math.max(Math.abs(Math.floor(duration / range)), minTimer);
       let startTime = new Date().getTime();
       let endTime = startTime + duration;
       let timer;
 
-      // Efek highlight kartu saat ada pergerakan data
       if (card) card.classList.add('updated');
 
       function run() {
@@ -87,30 +102,34 @@
 
     client.on('connect', () => {
       statusEl.textContent = 'Status: Terhubung';
-      statusEl.className = 'status connected';
-      client.subscribe('sensor/data');
+      statusEl.className = 'connected';
+      // Wildcard '+' untuk mendengarkan topik semua pot (pot-1/data, pot-2/data, dst.)
+      client.subscribe('pot-+/data');
     });
 
     client.on('message', (topic, message) => {
       try {
+        // Mengambil ID pot dari topik (misal: "pot-1/data" -> "pot-1")
+        const potId = topic.split('/')[0];
+        getOrCreatePotSection(potId);
+
         const data = JSON.parse(message.toString());
 
-        // Jalankan animasi pergerakan angka jika data tersedia
         if (data.temp !== undefined) {
-          animateValue('temp', currentValues.temp, data.temp, 1000, 2);
-          currentValues.temp = data.temp;
+          animateValue(`${potId}-temp`, currentValues[potId].temp, data.temp, 1000, 2);
+          currentValues[potId].temp = data.temp;
         }
         if (data.hum !== undefined) {
-          animateValue('hum', currentValues.hum, data.hum, 1000, 2);
-          currentValues.hum = data.hum;
+          animateValue(`${potId}-hum`, currentValues[potId].hum, data.hum, 1000, 2);
+          currentValues[potId].hum = data.hum;
         }
         if (data.dist !== undefined) {
-          animateValue('dist', currentValues.dist, data.dist, 1000, 0);
-          currentValues.dist = data.dist;
+          animateValue(`${potId}-dist`, currentValues[potId].dist, data.dist, 1000, 0);
+          currentValues[potId].dist = data.dist;
         }
         if (data.lux !== undefined) {
-          animateValue('lux', currentValues.lux, data.lux, 1000, 0);
-          currentValues.lux = data.lux;
+          animateValue(`${potId}-lux`, currentValues[potId].lux, data.lux, 1000, 0);
+          currentValues[potId].lux = data.lux;
         }
       } catch (e) {
         console.error('Gagal parse JSON:', e);
@@ -119,7 +138,7 @@
 
     client.on('close', () => {
       statusEl.textContent = 'Status: Terputus';
-      statusEl.className = 'status disconnected';
+      statusEl.className = 'disconnected';
     });
   </script>
 </body>
