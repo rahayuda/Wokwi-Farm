@@ -207,6 +207,9 @@
       return safeId;
     }
 
+    // Buat kartu default untuk "sensor/data" secara langsung saat halaman pertama kali dimuat
+    getOrCreateTopicCard('sensor/data');
+
     // Fungsi Animasi Perubahan Angka
     function animateValue(safeId, sensorKey, start, end, duration, decimals = 0) {
       if (start === end) return;
