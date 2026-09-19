@@ -12,75 +12,75 @@ nodes:
 steps:
   # 1. PAGI HARI (Denpasar ~07.00 WITA)
   - delay: 1s
-  - set-attribute:
+  - set:
       node: dht1
       attribute: temperature
       value: "26.0"
-  - set-attribute:
+  - set:
       node: dht1
       attribute: humidity
       value: "80"
-  - set-attribute:
+  - set:
       node: ldr1
       attribute: lux
       value: "1000"
-  - set-attribute:
+  - set:
       node: ultrasonic1
       attribute: distance
       value: "100"
 
   # 2. SIANG HARI TERIK (Denpasar ~12.00 WITA)
   - delay: 6s
-  - set-attribute:
+  - set:
       node: dht1
       attribute: temperature
       value: "33.5"
-  - set-attribute:
+  - set:
       node: dht1
       attribute: humidity
       value: "55"
-  - set-attribute:
+  - set:
       node: ldr1
       attribute: lux
       value: "4000"
 
   # 3. SORE HARI (Denpasar ~17.30 WITA)
   - delay: 6s
-  - set-attribute:
+  - set:
       node: dht1
       attribute: temperature
       value: "28.0"
-  - set-attribute:
+  - set:
       node: dht1
       attribute: humidity
       value: "68"
-  - set-attribute:
+  - set:
       node: ldr1
       attribute: lux
       value: "300"
 
   # 4. SIMULASI DETEKSI HAMA
   - delay: 6s
-  - set-attribute:
+  - set:
       node: ultrasonic1
       attribute: distance
       value: "20"
 
   # 5. MALAM HARI (Denpasar ~21.00 WITA)
   - delay: 6s
-  - set-attribute:
+  - set:
       node: dht1
       attribute: temperature
       value: "24.5"
-  - set-attribute:
+  - set:
       node: dht1
       attribute: humidity
       value: "85"
-  - set-attribute:
+  - set:
       node: ldr1
       attribute: lux
       value: "0"
-  - set-attribute:
+  - set:
       node: ultrasonic1
       attribute: distance
       value: "120"
