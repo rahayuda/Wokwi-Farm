@@ -17,7 +17,6 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      # 1. Build Firmware ESP32 menggunakan Arduino CLI
       - name: Setup Arduino CLI
         uses: arduino/setup-arduino-cli@v1
 
@@ -35,11 +34,11 @@ jobs:
           mkdir -p build
           arduino-cli compile --fqbn esp32:esp32:esp32 --output-dir build ./main
 
-      # 2. Jalankan Simulasi Wokwi CI
-      - name: Run Wokwi Simulation Test
+      - name: Run Wokwi Simulation Test with Scenario
         uses: wokwi/wokwi-ci-action@v1
         with:
           token: ${{ secrets.WOKWI_CLI_TOKEN }}
           path: .
-          timeout: 30000
-          expect_text: '{"distance"'
+          scenario: scenario.yaml
+          timeout: 35000
+          expect_text: '{"distance":120'
