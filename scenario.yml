@@ -12,30 +12,35 @@ nodes:
 steps:
   # 1. PAGI HARI (Denpasar ~07.00 WITA)
   - delay: 1s
-  - dht1.temperature: "26.0"
-  - dht1.humidity: "80"
-  - ldr1.lux: "1000"
-  - ultrasonic1.distance: "100"
+  - set:
+      dht1.temperature: 26.0
+      dht1.humidity: 80
+      ldr1.lux: 1000
+      ultrasonic1.distance: 100
 
   # 2. SIANG HARI TERIK (Denpasar ~12.00 WITA)
   - delay: 6s
-  - dht1.temperature: "33.5"
-  - dht1.humidity: "55"
-  - ldr1.lux: "4000"
+  - set:
+      dht1.temperature: 33.5
+      dht1.humidity: 55
+      ldr1.lux: 4000
 
   # 3. SORE HARI (Denpasar ~17.30 WITA)
   - delay: 6s
-  - dht1.temperature: "28.0"
-  - dht1.humidity: "68"
-  - ldr1.lux: "300"
+  - set:
+      dht1.temperature: 28.0
+      dht1.humidity: 68
+      ldr1.lux: 300
 
   # 4. SIMULASI DETEKSI HAMA
   - delay: 6s
-  - ultrasonic1.distance: "20"
+  - set:
+      ultrasonic1.distance: 20
 
   # 5. MALAM HARI (Denpasar ~21.00 WITA)
   - delay: 6s
-  - dht1.temperature: "24.5"
-  - dht1.humidity: "85"
-  - ldr1.lux: "0"
-  - ultrasonic1.distance: "120"
+  - set:
+      dht1.temperature: 24.5
+      dht1.humidity: 85
+      ldr1.lux: 0
+      ultrasonic1.distance: 120
