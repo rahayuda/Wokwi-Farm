@@ -1,5 +1,5 @@
 [wokwi]
 version = 1
-firmware = 'build/wokwi-firmware.elf'
-elf = 'build/wokwi-firmware.elf'
+firmware = 'build/main.ino.bin'
+elf = 'build/main.ino.elf'
 diagram = 'diagram.json'
