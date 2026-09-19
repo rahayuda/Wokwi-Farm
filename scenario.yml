@@ -1,4 +1,5 @@
 version: 1
+name: Denpasar Weather Scenario # <-- Tambahkan baris ini
 author: Surya
 nodes:
   - id: dht1
@@ -33,7 +34,7 @@ steps:
     set-attribute:
       node: dht1
       attribute: temperature
-      value: "33.5" # Panas (Memicu Cooler/AC ON di web)
+      value: "33.5"
   - set-attribute:
       node: dht1
       attribute: humidity
@@ -58,12 +59,12 @@ steps:
       attribute: lux
       value: "300"
 
-  # 4. SIMULASI DETEKSI HAMA / SERANGGA
+  # 4. SIMULASI DETEKSI HAMA
   - wait-ms: 6000
     set-attribute:
       node: ultrasonic1
       attribute: distance
-      value: "20" # Jarak < 30 cm (Memicu Alarm Hama di web)
+      value: "20"
 
   # 5. MALAM HARI (Denpasar ~21.00 WITA)
   - wait-ms: 6000
@@ -78,7 +79,7 @@ steps:
   - set-attribute:
       node: ldr1
       attribute: lux
-      value: "0" # Gelap / Mode Malam
+      value: "0"
   - set-attribute:
       node: ultrasonic1
       attribute: distance
