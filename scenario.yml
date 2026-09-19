@@ -1,41 +1,100 @@
 version: 1
+
 name: Denpasar Weather Scenario
+
 author: Surya
-nodes:
-  - id: dht1
-    type: wokwi-dht22
-  - id: ultrasonic1
-    type: wokwi-hc-sr04
-  - id: ldr1
-    type: wokwi-photoresistor-sensor
 
 steps:
-  # 1. PAGI HARI (Denpasar ~07.00 WITA)
-  - delay: 1s
-  - set-attribute: { node: dht1, attribute: temperature, value: 26.0 }
-  - set-attribute: { node: dht1, attribute: humidity, value: 80 }
-  - set-attribute: { node: ldr1, attribute: lux, value: 1000 }
-  - set-attribute: { node: ultrasonic1, attribute: distance, value: 100 }
 
-  # 2. SIANG HARI TERIK (Denpasar ~12.00 WITA)
-  - delay: 6s
-  - set-attribute: { node: dht1, attribute: temperature, value: 33.5 }
-  - set-attribute: { node: dht1, attribute: humidity, value: 55 }
-  - set-attribute: { node: ldr1, attribute: lux, value: 4000 }
+  # ==================================================
+  # 1. PAGI HARI
+  # Denpasar sekitar 07.00 WITA
+  # ==================================================
 
-  # 3. SORE HARI (Denpasar ~17.30 WITA)
-  - delay: 6s
-  - set-attribute: { node: dht1, attribute: temperature, value: 28.0 }
-  - set-attribute: { node: dht1, attribute: humidity, value: 68 }
-  - set-attribute: { node: ldr1, attribute: lux, value: 300 }
+  - delay: 2s
 
-  # 4. SIMULASI DETEKSI HAMA
-  - delay: 6s
-  - set-attribute: { node: ultrasonic1, attribute: distance, value: 20 }
+  - set-control:
+      part-id: dht1
+      control: temperature
+      value: 26.0
 
-  # 5. MALAM HARI (Denpasar ~21.00 WITA)
+  - set-control:
+      part-id: dht1
+      control: humidity
+      value: 80
+
+  - set-control:
+      part-id: ldr1
+      control: lux
+      value: 1000
+
   - delay: 6s
-  - set-attribute: { node: dht1, attribute: temperature, value: 24.5 }
-  - set-attribute: { node: dht1, attribute: humidity, value: 85 }
-  - set-attribute: { node: ldr1, attribute: lux, value: 0 }
-  - set-attribute: { node: ultrasonic1, attribute: distance, value: 120 }
+
+
+  # ==================================================
+  # 2. SIANG HARI TERIK
+  # Denpasar sekitar 12.00 WITA
+  # ==================================================
+
+  - set-control:
+      part-id: dht1
+      control: temperature
+      value: 33.5
+
+  - set-control:
+      part-id: dht1
+      control: humidity
+      value: 55
+
+  - set-control:
+      part-id: ldr1
+      control: lux
+      value: 4000
+
+  - delay: 6s
+
+
+  # ==================================================
+  # 3. SORE HARI
+  # Denpasar sekitar 17.30 WITA
+  # ==================================================
+
+  - set-control:
+      part-id: dht1
+      control: temperature
+      value: 28.0
+
+  - set-control:
+      part-id: dht1
+      control: humidity
+      value: 68
+
+  - set-control:
+      part-id: ldr1
+      control: lux
+      value: 300
+
+  - delay: 6s
+
+
+  # ==================================================
+  # 4. MALAM HARI
+  # Denpasar sekitar 21.00 WITA
+  # ==================================================
+
+  - set-control:
+      part-id: dht1
+      control: temperature
+      value: 24.5
+
+  - set-control:
+      part-id: dht1
+      control: humidity
+      value: 85
+
+  - set-control:
+      part-id: ldr1
+      control: lux
+      value: 0
+
+  - delay: 6s
