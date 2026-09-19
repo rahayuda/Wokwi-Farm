@@ -1,5 +1,5 @@
 version: 1
-name: Denpasar Weather Scenario # <-- Tambahkan baris ini
+name: Denpasar Weather Scenario
 author: Surya
 nodes:
   - id: dht1
@@ -11,8 +11,8 @@ nodes:
 
 steps:
   # 1. PAGI HARI (Denpasar ~07.00 WITA)
-  - wait-ms: 1000
-    set-attribute:
+  - delay: 1s
+  - set-attribute:
       node: dht1
       attribute: temperature
       value: "26.0"
@@ -30,8 +30,8 @@ steps:
       value: "100"
 
   # 2. SIANG HARI TERIK (Denpasar ~12.00 WITA)
-  - wait-ms: 6000
-    set-attribute:
+  - delay: 6s
+  - set-attribute:
       node: dht1
       attribute: temperature
       value: "33.5"
@@ -45,8 +45,8 @@ steps:
       value: "4000"
 
   # 3. SORE HARI (Denpasar ~17.30 WITA)
-  - wait-ms: 6000
-    set-attribute:
+  - delay: 6s
+  - set-attribute:
       node: dht1
       attribute: temperature
       value: "28.0"
@@ -60,15 +60,15 @@ steps:
       value: "300"
 
   # 4. SIMULASI DETEKSI HAMA
-  - wait-ms: 6000
-    set-attribute:
+  - delay: 6s
+  - set-attribute:
       node: ultrasonic1
       attribute: distance
       value: "20"
 
   # 5. MALAM HARI (Denpasar ~21.00 WITA)
-  - wait-ms: 6000
-    set-attribute:
+  - delay: 6s
+  - set-attribute:
       node: dht1
       attribute: temperature
       value: "24.5"
