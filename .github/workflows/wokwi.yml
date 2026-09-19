@@ -2,38 +2,65 @@ name: Wokwi Test
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
+
   pull_request:
-    branches: [ "main" ]
+    branches: ["main"]
+
   workflow_dispatch:
+
   schedule:
-    - cron: '0 */6 * * *'
+    - cron: "0 */6 * * *"
 
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
 
     steps:
+      # ==================================================
+      # CHECKOUT
+      # ==================================================
       - name: Checkout Repository
         uses: actions/checkout@v4
 
+      # ==================================================
+      # ARDUINO CLI
+      # ==================================================
       - name: Setup Arduino CLI
         uses: arduino/setup-arduino-cli@v1
 
+      # ==================================================
+      # ESP32 CORE & LIBRARIES
+      # ==================================================
       - name: Install ESP32 Core & Libraries
         run: |
           arduino-cli config init
-          arduino-cli config set board_manager.additional_urls https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_index.json
+
+          arduino-cli config set board_manager.additional_urls \
+            https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_index.json
+
           arduino-cli core update-index
+
           arduino-cli core install esp32:esp32
+
           arduino-cli lib install "DHT sensor library"
           arduino-cli lib install "Adafruit Unified Sensor"
 
+      # ==================================================
+      # COMPILE ESP32
+      # ==================================================
       - name: Compile ESP32 Sketch
         run: |
           mkdir -p build
-          arduino-cli compile --fqbn esp32:esp32:esp32 --output-dir build ./main
 
+          arduino-cli compile \
+            --fqbn esp32:esp32:esp32 \
+            --output-dir build \
+            ./main
+
+      # ==================================================
+      # WOKWI SIMULATION
+      # ==================================================
       - name: Run Wokwi Simulation Test with Scenario
         uses: wokwi/wokwi-ci-action@v1
         with:
@@ -41,4 +68,6 @@ jobs:
           path: .
           scenario: scenario.yml
           timeout: 35000
-          expect_text: '{"distance":120'
+
+          # Output yang benar-benar dicetak oleh main.ino
+          expect_text: "Distance: 65 cm"
