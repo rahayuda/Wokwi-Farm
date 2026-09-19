@@ -39,6 +39,9 @@ void setup() {
 
   Serial.println("\nWiFi connected");
   
+  // Inisialisasi Seed Random berdasarkan waktu micros agar nilai acak bervariasi
+  randomSeed(micros());
+
   // Konfigurasi waktu NTP untuk Denpasar
   configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);
   
@@ -50,6 +53,11 @@ void setup() {
   espClient.setInsecure();
 }
 
+// Fungsi pembantu untuk menghasilkan angka desimal acak dalam rentang min - max
+float getRandomFloat(float minVal, float maxVal) {
+  return minVal + (float)random(0, 1000) / 1000.0 * (maxVal - minVal);
+}
+
 void getDenpasarProfile(float &temp, float &hum, int &lux, int &dist) {
   struct tm timeinfo;
   int hour = 12; // Default jika NTP belum sinkron
@@ -58,15 +66,27 @@ void getDenpasarProfile(float &temp, float &hum, int &lux, int &dist) {
     hour = timeinfo.tm_hour;
   }
 
-  // Profil Cuaca Denpasar berdasarkan jam WITA
+  // Profil Cuaca Denpasar dengan Rentang Bias Variabel
   if (hour >= 6 && hour < 11) {         // PAGI (06.00 - 11.00)
-    temp = 26.0; hum = 80.0; lux = 1000; dist = 100;
+    temp = getRandomFloat(25.0, 27.5);   // 25.0 - 27.5 °C
+    hum  = getRandomFloat(75.0, 85.0);   // 75 - 85 %
+    lux  = random(900, 1500);            // 900 - 1500 Lux
+    dist = random(90, 110);              // 90 - 110 cm
   } else if (hour >= 11 && hour < 16) {  // SIANG TERIK (11.00 - 16.00)
-    temp = 33.5; hum = 55.0; lux = 4000; dist = 100;
+    temp = getRandomFloat(32.0, 35.0);   // 32.0 - 35.0 °C
+    hum  = getRandomFloat(50.0, 60.0);   // 50 - 60 %
+    lux  = random(3500, 4200);           // 3500 - 4200 Lux
+    dist = random(90, 110);              // 90 - 110 cm
   } else if (hour >= 16 && hour < 19) {  // SORE (16.00 - 19.00)
-    temp = 28.0; hum = 68.0; lux = 300;  dist = 100;
+    temp = getRandomFloat(27.0, 29.5);   // 27.0 - 29.5 °C
+    hum  = getRandomFloat(65.0, 75.0);   // 65 - 75 %
+    lux  = random(200, 500);             // 200 - 500 Lux
+    dist = random(90, 110);              // 90 - 110 cm
   } else {                               // MALAM (19.00 - 06.00)
-    temp = 24.5; hum = 85.0; lux = 0;    dist = 120;
+    temp = getRandomFloat(23.5, 25.5);   // 23.5 - 25.5 °C
+    hum  = getRandomFloat(80.0, 90.0);   // 80 - 90 %
+    lux  = random(0, 50);                // 0 - 50 Lux
+    dist = random(110, 130);             // 110 - 130 cm
   }
 }
 
@@ -75,8 +95,8 @@ void sendToFirebase(float temperature, float humidity, int distance, int lightIn
     http.begin(espClient, firebaseHost);
     http.addHeader("Content-Type", "application/json");
 
-    String jsonData = "{\"temperature\": " + String(temperature) + 
-                      ", \"humidity\": " + String(humidity) + 
+    String jsonData = "{\"temperature\": " + String(temperature, 1) + 
+                      ", \"humidity\": " + String(humidity, 1) + 
                       ", \"distance\": " + String(distance) + 
                       ", \"lightIntensity\": " + String(lightIntensity) + "}";
 
@@ -101,11 +121,11 @@ void loop() {
   float temp, hum;
   int lux, dist;
 
-  // Ambil data sesuai jam real-time
+  // Ambil data acak sesuai rentang jam real-time Denpasar
   getDenpasarProfile(temp, hum, lux, dist);
 
-  Serial.print("Temperature: "); Serial.print(temp);
-  Serial.print(" °C, Humidity: "); Serial.print(hum);
+  Serial.print("Temperature: "); Serial.print(temp, 1);
+  Serial.print(" °C, Humidity: "); Serial.print(hum, 1);
   Serial.print(" %, Distance: "); Serial.print(dist);
   Serial.print(" cm, Light Intensity: "); Serial.println(lux);
 
