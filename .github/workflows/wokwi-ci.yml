@@ -31,7 +31,7 @@ jobs:
       - name: Compile ESP32 Sketch
         run: |
           mkdir -p build
-          arduino-cli compile --fqbn esp32:esp32:esp32 --output-dir build ./src/main.ino
+          arduino-cli compile --fqbn esp32:esp32:esp32 --output-dir build ./main
 
       # 2. Jalankan Simulasi Wokwi CI
       - name: Run Wokwi Simulation Test
