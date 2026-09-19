@@ -39,6 +39,6 @@ jobs:
         with:
           token: ${{ secrets.WOKWI_CLI_TOKEN }}
           path: .
-          scenario: scenario.yaml
+          scenario: scenario.yml
           timeout: 35000
           expect_text: '{"distance":120'
