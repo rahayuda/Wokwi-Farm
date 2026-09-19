@@ -40,3 +40,4 @@ jobs:
           token: ${{ secrets.WOKWI_CLI_TOKEN }}
           path: .
           timeout: 30000
+          expect_text: '{"distance"'
