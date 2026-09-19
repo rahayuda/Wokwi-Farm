@@ -388,12 +388,10 @@
 
   </main>
 
-  <script type="module">
-    // Import SDK Firebase v10.14.1
+<script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
     import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js";
 
-    // Configuration
     const firebaseConfig = {
       apiKey: "AIzaSyAp-xABc3sjcsLa2GFBEOlK0BmdP7BjC2U",
       authDomain: "wokwi-eea2f.firebaseapp.com",
@@ -405,17 +403,15 @@
       measurementId: "G-E9RN7W9R08"
     };
 
-    // Initialize Firebase
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
     const sensorDataRef = ref(db, 'sensorData');
 
-    // DOM Connection status elements
+    // DOM Elements
     const connectionBadge = document.getElementById('connectionBadge');
     const connIcon = document.getElementById('connIcon');
     const connText = document.getElementById('connText');
 
-    // Simulation Visual Elements
     const farmSky = document.getElementById('farmSky');
     const skyIcon = document.getElementById('skyIcon');
     const skyModeLabel = document.getElementById('skyModeLabel');
@@ -423,7 +419,6 @@
     const celestialIcon = document.getElementById('celestialIcon');
     const lightPercentLabel = document.getElementById('lightPercentLabel');
     
-    // Actuators
     const acUnit = document.getElementById('acUnit');
     const acFanIcon = document.getElementById('acFanIcon');
     const acStatusText = document.getElementById('acStatusText');
@@ -441,7 +436,6 @@
     const sensorDistanceDisplay = document.getElementById('sensorDistanceDisplay');
     const alarmBadge = document.getElementById('alarmBadge');
 
-    // Sliders
     const simLdr = document.getElementById('simLdr');
     const simTemp = document.getElementById('simTemp');
     const simHum = document.getElementById('simHum');
@@ -453,196 +447,10 @@
     const simDistVal = document.getElementById('simDistVal');
     const resetSyncBtn = document.getElementById('resetSyncBtn');
 
-    class SoundEffectsManager {
-      constructor() {
-        this.ctx = null;
-        this.enabled = false;
-        this.waterNode = null;
-        this.acNode = null;
-        this.alarmInterval = null;
-      }
-
-      init() {
-        if (!this.ctx) {
-          const AudioContext = window.AudioContext || window.webkitAudioContext;
-          this.ctx = new AudioContext();
-        }
-        if (this.ctx.state === 'suspended') {
-          this.ctx.resume();
-        }
-      }
-
-      toggle() {
-        this.init();
-        this.enabled = !this.enabled;
-        if (!this.enabled) {
-          this.stopAll();
-        }
-        return this.enabled;
-      }
-
-      stopAll() {
-        this.stopWater();
-        this.stopAC();
-        this.stopAlarm();
-      }
-
-      // 1. Suara Siram Air (Pancuran Spray)
-      startWater() {
-        if (!this.enabled || !this.ctx || this.waterNode) return;
-        const bufferSize = this.ctx.sampleRate * 2;
-        const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
-        const data = buffer.getChannelData(0);
-        for (let i = 0; i < bufferSize; i++) {
-          data[i] = Math.random() * 2 - 1;
-        }
-        const noise = this.ctx.createBufferSource();
-        noise.buffer = buffer;
-        noise.loop = true;
-
-        const filter = this.ctx.createBiquadFilter();
-        filter.type = 'bandpass';
-        filter.frequency.value = 900;
-        filter.Q.value = 1.0;
-
-        const gain = this.ctx.createGain();
-        gain.gain.setValueAtTime(0.09, this.ctx.currentTime);
-
-        noise.connect(filter);
-        filter.connect(gain);
-        gain.connect(this.ctx.destination);
-        noise.start();
-        this.waterNode = { noise, gain };
-      }
-
-      stopWater() {
-        if (this.waterNode) {
-          try {
-            this.waterNode.noise.stop();
-            this.waterNode.noise.disconnect();
-          } catch(e) {}
-          this.waterNode = null;
-        }
-      }
-
-      // 2. Suara Hembusan AC / Cooler Unit
-      startAC() {
-        if (!this.enabled || !this.ctx || this.acNode) return;
-        const bufferSize = this.ctx.sampleRate * 2;
-        const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
-        const data = buffer.getChannelData(0);
-        for (let i = 0; i < bufferSize; i++) {
-          data[i] = Math.random() * 2 - 1;
-        }
-        const noise = this.ctx.createBufferSource();
-        noise.buffer = buffer;
-        noise.loop = true;
-
-        const filter = this.ctx.createBiquadFilter();
-        filter.type = 'lowpass';
-        filter.frequency.value = 350;
-
-        const humOsc = this.ctx.createOscillator();
-        humOsc.type = 'sine';
-        humOsc.frequency.value = 65;
-
-        const gain = this.ctx.createGain();
-        gain.gain.setValueAtTime(0.07, this.ctx.currentTime);
-
-        noise.connect(filter);
-        filter.connect(gain);
-        humOsc.connect(gain);
-        gain.connect(this.ctx.destination);
-
-        noise.start();
-        humOsc.start();
-        this.acNode = { noise, humOsc, gain };
-      }
-
-      stopAC() {
-        if (this.acNode) {
-          try {
-            this.acNode.noise.stop();
-            this.acNode.humOsc.stop();
-            this.acNode.noise.disconnect();
-            this.acNode.humOsc.disconnect();
-          } catch(e) {}
-          this.acNode = null;
-        }
-      }
-
-      // 3. Suara Alarm Serangga / Hama (Beeping Alert)
-      startAlarm() {
-        if (!this.enabled || !this.ctx || this.alarmInterval) return;
-        const playBeep = () => {
-          if (!this.enabled || !this.ctx) return;
-          const osc = this.ctx.createOscillator();
-          const gain = this.ctx.createGain();
-          osc.type = 'sawtooth';
-          osc.frequency.setValueAtTime(950, this.ctx.currentTime);
-          osc.frequency.exponentialRampToValueAtTime(1350, this.ctx.currentTime + 0.12);
-
-          gain.gain.setValueAtTime(0.14, this.ctx.currentTime);
-          gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.15);
-
-          osc.connect(gain);
-          gain.connect(this.ctx.destination);
-          osc.start();
-          osc.stop(this.ctx.currentTime + 0.16);
-        };
-
-        playBeep();
-        this.alarmInterval = setInterval(playBeep, 500);
-      }
-
-      stopAlarm() {
-        if (this.alarmInterval) {
-          clearInterval(this.alarmInterval);
-          this.alarmInterval = null;
-        }
-      }
-
-      // Realtime Update Controller
-      update({ isWatering, isCooler, isAlarm }) {
-        if (!this.enabled) return;
-        
-        if (isWatering) this.startWater();
-        else this.stopWater();
-
-        if (isCooler) this.startAC();
-        else this.stopAC();
-
-        if (isAlarm) this.startAlarm();
-        else this.stopAlarm();
-      }
-    }
-
-    const sfx = new SoundEffectsManager();
-    const toggleSoundBtn = document.getElementById('toggleSoundBtn');
-    const soundIcon = document.getElementById('soundIcon');
-    const soundText = document.getElementById('soundText');
-
-    toggleSoundBtn.addEventListener('click', () => {
-      const active = sfx.toggle();
-      if (active) {
-        soundIcon.className = "fa-solid fa-volume-high text-emerald-400 animate-pulse";
-        soundText.textContent = "Suara: ON";
-        toggleSoundBtn.classList.replace('bg-slate-800', 'bg-emerald-950/80');
-        toggleSoundBtn.classList.replace('border-slate-700', 'border-emerald-500/60');
-      } else {
-        soundIcon.className = "fa-solid fa-volume-xmark text-rose-400";
-        soundText.textContent = "Suara: OFF";
-        toggleSoundBtn.classList.replace('bg-emerald-950/80', 'bg-slate-800');
-        toggleSoundBtn.classList.replace('border-emerald-500/60', 'border-slate-700');
-      }
-      if (window.currentSensorState) {
-        sfx.update(window.currentSensorState);
-      }
-    });
-
     let isManualOverride = false;
+    let liveState = { temp: 25, hum: 55, lux: 2000, dist: 50 };
+    let activeEffectInterval = null;
 
-    // Fungsi Kalibrasi LDR dari kode Anda
     function calibrateLightIntensity(rawValue) {
       const minValue = 32;
       const maxValue = 4063;
@@ -651,20 +459,16 @@
       return Math.max(0, Math.min(100, calculated));
     }
 
-    // Fungsi Utama Pembaruan Data & Tampilan Dashboard
-    function processSensorData(data) {
+    // Fungsi Render Tampilan Utama
+    function renderDashboard(data) {
       const distance = Number(data.distance ?? 50);
       const humidity = Number(data.humidity ?? 50);
       const temperature = Number(data.temperature ?? 25);
       const rawLightIntensity = Number(data.lightIntensity ?? 2000);
 
-      // 1. Kalibrasi nilai intensitas cahaya (0 - 100%)
       const lightIntensity = calibrateLightIntensity(rawLightIntensity).toFixed(2);
-
-      // 2. Tentukan status Siang/Malam
       const lightIntensityStatus = (lightIntensity > 50) ? "Day" : "Night";
 
-      // 3. Evaluasi Ambang Batas Suhu dan Kelembapan
       let temperatureStatus, humidityStatus;
 
       if (lightIntensityStatus === "Day") {
@@ -675,28 +479,23 @@
         humidityStatus = (humidity < 50) ? "Watering On" : (humidity > 80) ? "Best" : "Good";
       }
 
-      // 4. Deteksi Hama / Serangga berdasarkan jarak (< 30 cm)
       const distanceStatus = (distance < 30) ? "Alarm On" : "Alarm Off";
 
-      // 5. Update Output Angka ke DOM Card
-      document.getElementById('temperatureValue').innerHTML = `${temperature} °C`;
-      document.getElementById('distanceValue').innerHTML = `${distance} cm`;
-      document.getElementById('humidityValue').innerHTML = `${humidity} %`;
+      document.getElementById('temperatureValue').innerHTML = `${temperature.toFixed(1)} °C`;
+      document.getElementById('distanceValue').innerHTML = `${distance.toFixed(0)} cm`;
+      document.getElementById('humidityValue').innerHTML = `${humidity.toFixed(1)} %`;
       document.getElementById('lightIntensityValue').innerHTML = `${lightIntensity} %`;
 
-      // Update Output Status Text ke DOM Card
       document.getElementById('lightIntensityStatus').innerHTML = `${lightIntensityStatus}`;
       document.getElementById('temperatureStatus').innerHTML = `${temperatureStatus}`;
       document.getElementById('humidityStatus').innerHTML = `${humidityStatus}`;
       document.getElementById('distanceStatus').innerHTML = `${distanceStatus}`;
 
-      // 6. Ubah Warna Card Berdasarkan Fungsi Warna Anda
       changeCardColor('temperature', temperatureStatus);
       changeCardColor('humidity', humidityStatus);
       changeCardColor('distance', distanceStatus);
       changeCardColor('lightIntensity', lightIntensityStatus);
 
-      // 7. SINKRONISASI VISUAL SIMULASI 2D
       updateVisualSimulation({
         lightIntensity,
         lightIntensityStatus,
@@ -705,98 +504,104 @@
         distance,
         distanceStatus
       });
-
-      const audioState = {
-        isWatering: humidityStatus === "Watering On",
-        isCooler: temperatureStatus === "Cooler On",
-        isAlarm: distanceStatus === "Alarm On"
-      };
-      window.currentSensorState = audioState;
-      sfx.update(audioState);
     }
 
-    // Fungsi Pengubah Warna Card Sesuai Logika Anda
+    // Logika Simulasi Fisika Interaktif di Browser
+    function startInteractivePhysics() {
+      if (activeEffectInterval) clearInterval(activeEffectInterval);
+
+      activeEffectInterval = setInterval(() => {
+        let changed = false;
+
+        // 1. Efek AC / Cooler: Jika Suhu Panas (>= 30°C), turunkan bertahap
+        if (liveState.temp >= 30.0) {
+          liveState.temp -= 0.4;
+          if (liveState.temp < 25.0) liveState.temp = 25.0;
+          changed = true;
+        }
+
+        // 2. Efek Keran / Irigasi: Jika Kelembapan Rendah (< 40%), naikkan bertahap
+        if (liveState.hum < 40.0) {
+          liveState.hum += 0.8;
+          if (liveState.hum > 65.0) liveState.hum = 65.0;
+          changed = true;
+        }
+
+        // 3. Efek Spray Elektrik Hama: Jika Jarak < 30cm (Hama Dekat), Spray menyala dan membuat Hama menjauh (+5cm)
+        if (liveState.dist < 30) {
+          liveState.dist += 5;
+          if (liveState.dist > 60) liveState.dist = 60; // Jarak aman, spray mati otomatis
+          changed = true;
+        }
+
+        if (changed) {
+          // Update slider jika tidak dalam override manual
+          if (!isManualOverride) {
+            simTemp.value = liveState.temp;
+            simHum.value = liveState.hum;
+            simDist.value = liveState.dist;
+
+            simTempVal.textContent = `${liveState.temp.toFixed(1)} °C`;
+            simHumVal.textContent = `${liveState.hum.toFixed(1)} %`;
+            simDistVal.textContent = `${liveState.dist.toFixed(0)} cm`;
+          }
+
+          renderDashboard({
+            temperature: liveState.temp,
+            humidity: liveState.hum,
+            lightIntensity: liveState.lux,
+            distance: liveState.dist
+          });
+        }
+      }, 1500); // Berjalan setiap 1.5 detik saat web terbuka
+    }
+
     function changeCardColor(sensor, status) {
       const card = document.querySelector(`#${sensor}Status`).parentElement;
-      const hrList = card.querySelectorAll('hr');
 
       if (sensor === "temperature") {
         if (status === "Heater On") {
-          card.style.backgroundColor = '#A72925';
-          card.style.color = '#FFFFFF';
-          hrList.forEach(hr => hr.style.borderColor = '#FFFFFF');
+          card.style.backgroundColor = '#A72925'; card.style.color = '#FFFFFF';
         } else if (status === "Cooler On") {
-          card.style.backgroundColor = '#00BFFF';
-          card.style.color = '#FFFFFF';
-          hrList.forEach(hr => hr.style.borderColor = '#FFFFFF');
-        } else if (status === "Good") {
-          card.style.backgroundColor = '#DCF2F1';
-          card.style.color = '#0F1035';
-          hrList.forEach(hr => hr.style.borderColor = 'rgba(15, 16, 53, 0.2)');
-        }
-      }
-      else if (sensor === "humidity") {
-        if (status === "Watering On") {
-          card.style.backgroundColor = '#00BFFF';
-          card.style.color = '#FFFFFF';
-          hrList.forEach(hr => hr.style.borderColor = '#FFFFFF');
-        } else if (status === "Best") {
-          card.style.backgroundColor = '#2C632C';
-          card.style.color = '#FFFFFF';
-          hrList.forEach(hr => hr.style.borderColor = '#FFFFFF');
-        } else if (status === "Good") {
-          card.style.backgroundColor = '#DCF2F1';
-          card.style.color = '#0F1035';
-          hrList.forEach(hr => hr.style.borderColor = 'rgba(15, 16, 53, 0.2)');
-        }
-      }
-      else if (sensor === "distance") {
-        if (status === "Alarm On") {
-          card.style.backgroundColor = '#A72925';
-          card.style.color = '#FFFFFF';
-          hrList.forEach(hr => hr.style.borderColor = '#FFFFFF');
+          card.style.backgroundColor = '#00BFFF'; card.style.color = '#FFFFFF';
         } else {
-          card.style.backgroundColor = '#DCF2F1';
-          card.style.color = '#0F1035';
-          hrList.forEach(hr => hr.style.borderColor = 'rgba(15, 16, 53, 0.2)');
+          card.style.backgroundColor = '#DCF2F1'; card.style.color = '#0F1035';
         }
-      }
-      else if (sensor === "lightIntensity") {
-        if (status === "Day") {
-          card.style.backgroundColor = '#DCF2F1';
-          card.style.color = '#0F1035';
-          hrList.forEach(hr => hr.style.borderColor = 'rgba(15, 16, 53, 0.2)');
-        } else if (status === "Night") {
-          card.style.backgroundColor = '#000000';
-          card.style.color = '#FFFFFF';
-          hrList.forEach(hr => hr.style.borderColor = '#FFFFFF');
+      } else if (sensor === "humidity") {
+        if (status === "Watering On") {
+          card.style.backgroundColor = '#00BFFF'; card.style.color = '#FFFFFF';
+        } else if (status === "Best") {
+          card.style.backgroundColor = '#2C632C'; card.style.color = '#FFFFFF';
+        } else {
+          card.style.backgroundColor = '#DCF2F1'; card.style.color = '#0F1035';
         }
+      } else if (sensor === "distance") {
+        card.style.backgroundColor = (status === "Alarm On") ? '#A72925' : '#DCF2F1';
+        card.style.color = (status === "Alarm On") ? '#FFFFFF' : '#0F1035';
+      } else if (sensor === "lightIntensity") {
+        card.style.backgroundColor = (status === "Day") ? '#DCF2F1' : '#000000';
+        card.style.color = (status === "Day") ? '#0F1035' : '#FFFFFF';
       }
     }
 
-    // Update Elemen Grafik Visual 2D Greenhouse
     function updateVisualSimulation(params) {
       const { lightIntensity, lightIntensityStatus, temperatureStatus, humidityStatus, distance, distanceStatus } = params;
 
-      // Daylight vs Night Simulation
       lightPercentLabel.textContent = `Cahaya: ${lightIntensity}%`;
       if (lightIntensityStatus === "Day") {
         farmSky.className = "relative overflow-hidden rounded-3xl border border-slate-800 bg-gradient-to-b from-sky-950 via-slate-900 to-emerald-950/40 p-4 sm:p-8 shadow-2xl transition-all duration-700";
         skyIcon.className = "fa-solid fa-sun text-amber-400";
         skyModeLabel.textContent = "Mode: Siang (Day)";
-        
         celestialOrb.className = "w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-gradient-to-tr from-amber-400 to-yellow-200 shadow-[0_0_30px_rgba(245,158,11,0.6)] flex items-center justify-center";
         celestialIcon.className = "fa-solid fa-sun text-3xl sm:text-4xl text-amber-600";
       } else {
         farmSky.className = "relative overflow-hidden rounded-3xl border border-indigo-900/50 bg-gradient-to-b from-slate-950 via-slate-900 to-emerald-950/20 p-4 sm:p-8 shadow-2xl transition-all duration-700";
         skyIcon.className = "fa-solid fa-moon text-indigo-300";
         skyModeLabel.textContent = "Mode: Malam (Night)";
-
         celestialOrb.className = "w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-gradient-to-tr from-slate-300 to-indigo-100 shadow-[0_0_20px_rgba(199,210,254,0.4)] flex items-center justify-center";
         celestialIcon.className = "fa-solid fa-moon text-3xl sm:text-4xl text-indigo-600";
       }
 
-      // Cooler / AC Visual Status
       if (temperatureStatus === "Cooler On") {
         acUnit.className = "bg-slate-800 border-2 border-cyan-400 rounded-xl p-2.5 shadow-xl shadow-cyan-500/20 flex items-center gap-3 w-40 sm:w-48";
         acFanIcon.className = "fa-solid fa-snowflake text-cyan-400 animate-spin";
@@ -813,16 +618,6 @@
         acBadge.classList.add('hidden');
       }
 
-      // Heater Visual Status
-      if (temperatureStatus === "Heater On") {
-        heaterUnit.classList.remove('hidden');
-        heaterBadge.classList.remove('hidden');
-      } else {
-        heaterUnit.classList.add('hidden');
-        heaterBadge.classList.add('hidden');
-      }
-
-      // Watering Sprinkler Visual Status
       if (humidityStatus === "Watering On") {
         sprinklerSpray.classList.remove('hidden');
         valveIcon.className = "fa-solid fa-faucet text-cyan-400 animate-bounce";
@@ -833,8 +628,7 @@
         wateringBadge.classList.add('hidden');
       }
 
-      // Insect / Serangga Visual Alarm (< 30cm)
-      sensorDistanceDisplay.textContent = `${distance} cm`;
+      sensorDistanceDisplay.textContent = `${distance.toFixed(0)} cm`;
       if (distanceStatus === "Alarm On") {
         insectGraphic.classList.remove('hidden');
         alarmBadge.classList.remove('hidden');
@@ -844,57 +638,43 @@
       }
     }
 
-    // Mendengarkan Realtime Data dari Firebase
+    // Dengarkan data terbaru dari Firebase
     onValue(sensorDataRef, (snapshot) => {
-      if (snapshot.exists()) {
+      if (snapshot.exists() && !isManualOverride) {
         const data = snapshot.val();
-        
         connectionBadge.className = "flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30";
         connIcon.className = "fa-solid fa-circle-check text-[10px]";
         connText.textContent = "RTDB Terhubung";
 
-        if (!isManualOverride) {
-          processSensorData(data);
+        liveState = {
+          temp: Number(data.temperature ?? 25),
+          hum: Number(data.humidity ?? 55),
+          lux: Number(data.lightIntensity ?? 2000),
+          dist: Number(data.distance ?? 50)
+        };
 
-          // Update posisi slider
-          simLdr.value = data.lightIntensity ?? 2000;
-          simTemp.value = data.temperature ?? 25;
-          simHum.value = data.humidity ?? 55;
-          simDist.value = data.distance ?? 50;
-
-          simLdrVal.textContent = simLdr.value;
-          simTempVal.textContent = `${simTemp.value} °C`;
-          simHumVal.textContent = `${simHum.value} %`;
-          simDistVal.textContent = `${simDist.value} cm`;
-        }
-      } else {
-        connText.textContent = "Node 'sensorData' Kosong";
+        renderDashboard(liveState);
+        startInteractivePhysics();
       }
-    }, (error) => {
-      console.error("Firebase Read Error: ", error);
-      connectionBadge.className = "flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold bg-rose-500/10 text-rose-400 border border-rose-500/30";
-      connIcon.className = "fa-solid fa-triangle-exclamation text-[10px]";
-      connText.textContent = "Gagal Membaca Firebase";
     });
 
-    // Slider Event Handler untuk Pengujian Manual Langsung
+    // Event Handler Slider
     function handleManualInput() {
       isManualOverride = true;
-      connectionBadge.className = "flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold bg-indigo-500/10 text-indigo-400 border border-indigo-500/30";
-      connIcon.className = "fa-solid fa-sliders text-[10px]";
-      connText.textContent = "Mode Simulasi Slider";
+      liveState = {
+        lux: Number(simLdr.value),
+        temp: Number(simTemp.value),
+        hum: Number(simHum.value),
+        dist: Number(simDist.value)
+      };
 
       simLdrVal.textContent = simLdr.value;
       simTempVal.textContent = `${simTemp.value} °C`;
       simHumVal.textContent = `${simHum.value} %`;
       simDistVal.textContent = `${simDist.value} cm`;
 
-      processSensorData({
-        lightIntensity: Number(simLdr.value),
-        temperature: Number(simTemp.value),
-        humidity: Number(simHum.value),
-        distance: Number(simDist.value)
-      });
+      renderDashboard(liveState);
+      startInteractivePhysics();
     }
 
     simLdr.addEventListener('input', handleManualInput);
@@ -906,14 +686,7 @@
       isManualOverride = false;
       connText.textContent = "Menyinkronkan ulang...";
     });
+</script>  
 
-    // Initial render
-    processSensorData({
-      distance: 50,
-      humidity: 55,
-      temperature: 25,
-      lightIntensity: 2000
-    });
-  </script>
 </body>
 </html>
