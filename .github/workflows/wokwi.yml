@@ -1,4 +1,4 @@
-name: Wokwi CI Test
+name: Wokwi Test
 
 on:
   push:
