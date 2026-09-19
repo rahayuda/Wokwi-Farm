@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Overview</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f4f7f9;
+      color: #333;
+      padding: 30px;
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 30px;
+    }
+
+    .header h2 {
+      font-size: 24px;
+      font-weight: 700;
+      color: #1a202c;
+    }
+
+    .status-badge {
+      font-size: 14px;
+      font-weight: 600;
+      padding: 8px 16px;
+      border-radius: 20px;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .status-badge::before {
+      content: '';
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+    }
+
+    .connected {
+      background-color: #e6f4ea;
+      color: #137333;
+    }
+    .connected::before {
+      background-color: #137333;
+    }
+
+    .disconnected {
+      background-color: #fce8e6;
+      color: #c5221f;
+    }
+    .disconnected::before {
+      background-color: #c5221f;
+    }
+
+/* Ubah justify-content menjadi flex-start */
+.dashboard-grid {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-start; /* Card baris baru dimulai dari kiri */
+  gap: 20px;
+  width: 100%;
+}
+
+/* Base Card Box dengan lebar tetap (0 grow, 0 shrink) */
+.device-card {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+  
+  /* flex: flex-grow flex-shrink flex-basis */
+  flex: 0 0 calc(25% - 15px); /* Tetap 25% dan tidak meregang jika sendiri */
+  min-width: 250px;
+}
+
+    .device-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid #edf2f7;
+    }
+
+    .device-title {
+      font-size: 18px;
+      font-weight: 700;
+      color: #007bff;
+    }
+
+    .device-tag {
+      font-size: 11px;
+      font-weight: 700;
+      color: #007bff;
+      background: #e6f0ff;
+      padding: 4px 8px;
+      border-radius: 6px;
+      letter-spacing: 0.5px;
+    }
+
+    /* Grid untuk indikator sensor di dalam Card Box */
+    .sensor-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .sensor-item {
+      background: #f8fafc;
+      border-radius: 10px;
+      padding: 16px;
+      text-align: center;
+      border: 1px solid #edf2f7;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .sensor-item.updated {
+      transform: scale(1.02);
+      box-shadow: 0 4px 10px rgba(0, 123, 255, 0.15);
+      border-color: #90caf9;
+    }
+
+    .sensor-label {
+      font-size: 11px;
+      font-weight: 700;
+      color: #718096;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 8px;
+    }
+
+    .sensor-value {
+      font-size: 20px;
+      font-weight: 700;
+      color: #1a202c;
+    }
+
+    .sensor-unit {
+      font-size: 12px;
+      font-weight: 400;
+      color: #718096;
+      margin-left: 2px;
+    }
+
+/* Media Queries untuk layar sedang hingga kecil */
+@media (max-width: 1200px) {
+  .device-card {
+    flex: 0 0 calc(33.333% - 14px); /* Maksimal 3 card per baris */
+  }
+}
+
+@media (max-width: 900px) {
+  .device-card {
+    flex: 0 0 calc(50% - 10px); /* Maksimal 2 card per baris */
+  }
+}
+
+@media (max-width: 600px) {
+  .device-card {
+    flex: 0 0 100%; /* Full width hanya pada layar ponsel */
+  }
+}
+
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <h2>Overview</h2>
+    <div id="status" class="status-badge disconnected">Status: Terputus</div>
+  </div>
+
+  <div class="dashboard-grid" id="dashboard-grid">
+    <!-- Card dinamis dari Firebase akan dimuat di sini -->
+  </div>
+
+  <!-- Firebase JavaScript SDK Modular -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyAp-xABc3sjcsLa2GFBEOlK0BmdP7BjC2U",
+      authDomain: "wokwi-eea2f.firebaseapp.com",
+      databaseURL: "https://wokwi-eea2f-default-rtdb.firebaseio.com",
+      projectId: "wokwi-eea2f",
+      storageBucket: "wokwi-eea2f.appspot.com",
+      messagingSenderId: "126495132632",
+      appId: "1:126495132632:web:bf9ed735696fdb72d200ad",
+      measurementId: "G-E9RN7W9R08"
+    };
+
+    // Inisialisasi Firebase
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    const statusEl = document.getElementById('status');
+    const dashboardGrid = document.getElementById('dashboard-grid');
+
+    // Menyimpan nilai terakhir tiap sensor untuk kebutuhan animasi
+    const previousValues = {};
+
+    function animateValue(elementId, cardId, start, end, duration, decimals = 0) {
+      if (start === end) return;
+      const obj = document.getElementById(elementId);
+      const card = document.getElementById(cardId);
+      if (!obj) return;
+
+      const range = end - start;
+      let minTimer = 50;
+      let stepTime = Math.abs(Math.floor(duration / Math.abs(range || 1)));
+      stepTime = Math.max(stepTime, minTimer);
+      let startTime = new Date().getTime();
+      let endTime = startTime + duration;
+      let timer;
+
+      if (card) card.classList.add('updated');
+
+      function run() {
+        let now = new Date().getTime();
+        let remaining = Math.max((endTime - now) / duration, 0);
+        let value = end - (remaining * range);
+        obj.innerHTML = value.toFixed(decimals);
+        if (value === end || remaining === 0) {
+          clearInterval(timer);
+          obj.innerHTML = end.toFixed(decimals);
+          if (card) setTimeout(() => card.classList.remove('updated'), 300);
+        }
+      }
+
+      timer = setInterval(run, stepTime);
+      run();
+    }
+
+    // Fungsi membuat elemen Card baru jika perangkat belum ada di DOM
+    function createDeviceCard(deviceId) {
+      const cardHtml = `
+        <div class="device-card" id="card-device-${deviceId}">
+          <div class="device-header">
+            <span class="device-title">${deviceId}</span>
+            <span class="device-tag">DEVICE</span>
+          </div>
+          <div class="sensor-grid">
+            <div class="sensor-item" id="item-temp-${deviceId}">
+              <div class="sensor-label">Suhu</div>
+              <div class="sensor-value"><span id="val-temp-${deviceId}">0.00</span><span class="sensor-unit">°C</span></div>
+            </div>
+            <div class="sensor-item" id="item-hum-${deviceId}">
+              <div class="sensor-label">Kelembapan</div>
+              <div class="sensor-value"><span id="val-hum-${deviceId}">0.00</span><span class="sensor-unit">%</span></div>
+            </div>
+            <div class="sensor-item" id="item-dist-${deviceId}">
+              <div class="sensor-label">Jarak</div>
+              <div class="sensor-value"><span id="val-dist-${deviceId}">0</span><span class="sensor-unit">cm</span></div>
+            </div>
+            <div class="sensor-item" id="item-lux-${deviceId}">
+              <div class="sensor-label">Cahaya</div>
+              <div class="sensor-value"><span id="val-lux-${deviceId}">0</span><span class="sensor-unit">lux</span></div>
+            </div>
+          </div>
+        </div>
+      `;
+      dashboardGrid.insertAdjacentHTML('beforeend', cardHtml);
+    }
+
+    // Mendengarkan perubahan data pada root node Realtime Database
+    const rootRef = ref(db, '/');
+
+    onValue(rootRef, (snapshot) => {
+      statusEl.textContent = 'Status: Terhubung';
+      statusEl.className = 'status-badge connected';
+
+      const data = snapshot.val();
+      if (!data) return;
+
+      // Iterasi seluruh node (sensorData, sensorData-1, dst.)
+      Object.keys(data).forEach((deviceId) => {
+        const deviceData = data[deviceId];
+
+        // Jika card untuk device belum dibuat, buat secara otomatis
+        if (!document.getElementById(`card-device-${deviceId}`)) {
+          createDeviceCard(deviceId);
+          // Pada fungsi createDeviceCard
+previousValues[deviceId] = {
+  temperature: 0,
+  humidity: 0,
+  distance: 0, // Ubah huruf D menjadi kecil
+  lightIntensity: 0
+};
+        }
+
+        const prev = previousValues[deviceId];
+
+        // Update nilai sensor sesuai kunci JSON dari Firebase Anda
+        if (deviceData.temperature !== undefined) {
+          animateValue(`val-temp-${deviceId}`, `item-temp-${deviceId}`, prev.temperature, deviceData.temperature, 1000, 1);
+          prev.temperature = deviceData.temperature;
+        }
+
+        if (deviceData.humidity !== undefined) {
+          animateValue(`val-hum-${deviceId}`, `item-hum-${deviceId}`, prev.humidity, deviceData.humidity, 1000, 0);
+          prev.humidity = deviceData.humidity;
+        }
+
+        // Pada fungsi listener onValue
+if (deviceData.distance !== undefined) {
+  animateValue(`val-dist-${deviceId}`, `item-dist-${deviceId}`, prev.distance, deviceData.distance, 1000, 0);
+  prev.distance = deviceData.distance;
+}
+
+        if (deviceData.lightIntensity !== undefined) {
+          animateValue(`val-lux-${deviceId}`, `item-lux-${deviceId}`, prev.lightIntensity, deviceData.lightIntensity, 1000, 0);
+          prev.lightIntensity = deviceData.lightIntensity;
+        }
+      });
+    }, (error) => {
+      console.error(error);
+      statusEl.textContent = 'Status: Terputus';
+      statusEl.className = 'status-badge disconnected';
+    });
+  </script>
+</body>
+</html>
